@@ -20,14 +20,26 @@ const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
 directionalLight.position.set(5, 10, 7);
 scene.add(directionalLight);
 
-const geometry = new THREE.BoxGeometry(5, 5, 5);
-const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
-const cube = new THREE.Mesh(geometry, material);
-cube.position.set(-10, 0, 0); 
-cube.userData = { id: 'my-projects-cube' }; 
-scene.add(cube);
-
 const loader = new GLTFLoader();
+loader.load('/models/bookcaseOpen.glb', function (gltf) {
+  const bookcase = gltf.scene;
+  
+  bookcase.scale.set(5, 5, 5); 
+  bookcase.position.set(-10, -5, 0); 
+  
+  bookcase.userData = { id: 'my-projects-cube' };
+
+  bookcase.traverse((child) => {
+    if (child.isMesh) {
+      child.userData = { id: 'my-projects-cube' };
+      child.castShadow = true;
+      child.receiveShadow = true;
+    }
+  });
+
+  scene.add(bookcase);
+});
+
 loader.load('/models/computerScreen.glb', function (gltf) {
   const model = gltf.scene;
   model.scale.set(5, 5, 5);
