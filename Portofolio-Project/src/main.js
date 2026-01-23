@@ -27,11 +27,11 @@ loader.load('/models/bookcaseOpen.glb', function (gltf) {
   bookcase.scale.set(5, 5, 5); 
   bookcase.position.set(-10, -5, 0); 
   
-  bookcase.userData = { id: 'my-projects-cube' };
+  bookcase.userData = { id: 'bookcase' };
 
   bookcase.traverse((child) => {
     if (child.isMesh) {
-      child.userData = { id: 'my-projects-cube' };
+      child.userData = { id: 'bookcase' };
       child.castShadow = true;
       child.receiveShadow = true;
     }
@@ -78,7 +78,7 @@ window.addEventListener('click', (event) => {
   if (intersects.length > 0) {
     const clickedObject = intersects[0].object;
 
-    if (clickedObject.userData.id === 'my-projects-cube') {
+    if (clickedObject.userData.id === 'bookcase') {
       isFocused = true; 
 
       gsap.to(camera.position, {
