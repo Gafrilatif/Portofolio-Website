@@ -45,3 +45,11 @@ To run this project locally on your machine:
 Feel free to reach out if you have questions about the code or want to discuss a project!
 
 * **GitHub:** [Gafrilatif](https://github.com/Gafrilatif)
+
+## 👋 Model Credits
+
+Eevee Figure:
+"Eevee" (https://skfb.ly/oEvtO) by DrewsDigitalDesigns is licensed under Creative Commons Attribution (http://creativecommons.org/licenses/by/4.0/).
+
+PC Model:
+"Custom Gaming PC" (https://skfb.ly/otsTr) by Yolala3D | Y3D is licensed under Creative Commons Attribution (http://creativecommons.org/licenses/by/4.0/).
