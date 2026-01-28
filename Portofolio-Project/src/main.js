@@ -69,15 +69,89 @@ const floorMaterial = new THREE.MeshStandardMaterial({
     metalness: 0.1                
 });
 
+const roomfloorColor = textureLoader.load('/textures/roomFloor_color.jpg');
+const roomfloorRoughness = textureLoader.load('/textures/roomFloor_roughness.jpg');
+const roomfloorNormal = textureLoader.load('/textures/roomFloor_normal.png');
+
+[roomfloorColor, roomfloorRoughness, roomfloorNormal].forEach(tex => {
+    tex.wrapS = THREE.RepeatWrapping;
+    tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(8, 8); 
+});
+
+const roomFloorMaterial = new THREE.MeshStandardMaterial({
+    map: roomfloorColor,              
+    roughnessMap: roomfloorRoughness, 
+    normalMap: roomfloorNormal,       
+    roughness: 0.6,               
+    metalness: 0                
+});
+
+const outsidefloorColor = textureLoader.load('/textures/grass_BaseColor.jpg');
+const outsidefloorRoughness = textureLoader.load('/textures/grass_Roughness.jpg');
+const outsidefloorNormal = textureLoader.load('/textures/grass_Normal.png');
+
+[outsidefloorColor, outsidefloorRoughness, outsidefloorNormal].forEach(tex => {
+    tex.wrapS = THREE.RepeatWrapping;
+    tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(0.2, 0.2); 
+});
+
+const outsideFloorMaterial = new THREE.MeshStandardMaterial({
+    map: outsidefloorColor,              
+    roughnessMap: outsidefloorRoughness, 
+    normalMap: outsidefloorNormal,       
+    roughness: 1,               
+    metalness: 0                
+});
+
 const floorGeometry = new THREE.BoxGeometry(125, 1, 125); 
 const floor = new THREE.Mesh(floorGeometry, floorMaterial);
 floor.position.y = -5.5; 
+floor.receiveShadow = true;
 scene.add(floor);
 
-const BoxGeometry = new THREE.BoxGeometry(1.48, 1, 1.5);
+const roomFloor = new THREE.BoxGeometry(26, 3, 20.5); 
+const roomFloorMesh = new THREE.Mesh(roomFloor, roomFloorMaterial);
+roomFloorMesh.position.y = -5.5; 
+roomFloorMesh.position.x = 12.5; 
+roomFloorMesh.position.z = 5.25; 
+roomFloorMesh.receiveShadow = true;
+scene.add(roomFloorMesh);
+
+const lShape = new THREE.Shape();
+
+lShape.moveTo(-10.5, -10.0); 
+lShape.lineTo(25.5, -10.0);   
+lShape.lineTo(25.5, -5.0);    
+lShape.lineTo(-0.5, -5.0);    
+lShape.lineTo(-0.5, 15.5);    
+lShape.lineTo(-10.5, 15.5);   
+lShape.lineTo(-10.5, -10.0);
+
+const extrudeSettings = {
+  depth: 3,           // Thickness of the floor
+  bevelEnabled: false // Sharp edges (no round corners)
+};
+
+const lShapeGeometry = new THREE.ExtrudeGeometry(lShape, extrudeSettings);
+
+outsideFloorMaterial.side = THREE.DoubleSide; 
+
+const fullOutsideFloor = new THREE.Mesh(lShapeGeometry, outsideFloorMaterial);
+
+fullOutsideFloor.rotation.x = Math.PI / 2; 
+
+fullOutsideFloor.position.y = -4; 
+
+fullOutsideFloor.receiveShadow = true;
+scene.add(fullOutsideFloor);
+
+
+const BoxGeometry = new THREE.BoxGeometry(1.48, 1, 1.48);
 const BoxMaterial = new THREE.MeshStandardMaterial({ color: 0xC4A484 });
 const box = new THREE.Mesh(BoxGeometry, BoxMaterial);
-box.position.set(13.24, -5, -3.8);
+box.position.set(13.24, -4, -3.73);
 box.castShadow = true;
 box.receiveShadow = true;
 scene.add(box);
@@ -87,7 +161,7 @@ const loader = new GLTFLoader();
 loader.load('/models/bookcaseClosed.glb', function (gltf) {
   const bookcase = gltf.scene;
   bookcase.scale.set(10, 10, 10); 
-  bookcase.position.set(0.5, -5, -1.5); 
+  bookcase.position.set(0.5, -4, -1.5); 
   
   bookcase.userData = { id: 'bookcase', viewOffset: { x: 8, y: 5, z: 8 } };
 
@@ -104,7 +178,7 @@ loader.load('/models/bookcaseClosed.glb', function (gltf) {
 loader.load('/models/books.glb', function (gltf) {
   const book = gltf.scene;
   book.scale.set(10, 10, 10); 
-  book.position.set(1, 1.1, -2); 
+  book.position.set(1, 2.1, -2); 
 
   book.userData = { id: 'book', viewOffset: { x: 8, y: 5, z: 8 } };
   book.traverse((child) => {
@@ -120,7 +194,7 @@ loader.load('/models/books.glb', function (gltf) {
 loader.load('/models/plantSmall1.glb', function (gltf) {
   const plant = gltf.scene;
   plant.scale.set(10, 10, 10); 
-  plant.position.set(3, -1.3, -2.2); 
+  plant.position.set(3, -0.3, -2.2); 
 
   plant.userData = { id: 'plant', viewOffset: { x: 8, y: 5, z: 8 } };
   plant.traverse((child) => {
@@ -136,7 +210,7 @@ loader.load('/models/plantSmall1.glb', function (gltf) {
 loader.load('/models/desk.glb', function (gltf) {
   const desk = gltf.scene;
   desk.scale.set(10, 10, 10);
-  desk.position.set(5, -5, -0.5); 
+  desk.position.set(5, -4, -0.5); 
 
   desk.userData = { id: 'desk', viewOffset: { x: 5, y: 8, z: 10 } };
 
@@ -153,7 +227,7 @@ loader.load('/models/desk.glb', function (gltf) {
 loader.load('/models/desk.glb', function (gltf) {
   const desk = gltf.scene;
   desk.scale.set(10, 10, 10);
-  desk.position.set(5, -5, -0.5); 
+  desk.position.set(5, -4, -0.5); 
 
   desk.userData = { id: 'desk', viewOffset: { x: 5, y: 8, z: 10 } };
 
@@ -170,7 +244,7 @@ loader.load('/models/desk.glb', function (gltf) {
 loader.load('/models/speaker.glb', function (gltf) {
   const speaker = gltf.scene;
   speaker.scale.set(10, 10, 10);
-  speaker.position.set(12.5, -4.5, -3); 
+  speaker.position.set(12.5, -3.5, -3); 
 
   speaker.userData = { id: 'speaker', viewOffset: { x: 5, y: 8, z: 10 } };
 
@@ -187,7 +261,7 @@ loader.load('/models/speaker.glb', function (gltf) {
 loader.load('/models/custom_gaming_pc.glb', function (gltf) {
   const custom_gaming_pc = gltf.scene;
   custom_gaming_pc.scale.set(0.5, 0.5, 0.5);
-  custom_gaming_pc.position.set(9, -3.6, -2.2); 
+  custom_gaming_pc.position.set(9, -2.6, -2.2); 
 
   custom_gaming_pc.userData = { id: 'custom_gaming_pc', viewOffset: { x: 5, y: 8, z: 10 } };
   custom_gaming_pc.traverse((child) => {
@@ -200,10 +274,11 @@ loader.load('/models/custom_gaming_pc.glb', function (gltf) {
   scene.add(custom_gaming_pc);
 });
 
+
 loader.load('/models/speakerSmall.glb', function (gltf) {
   const speaker = gltf.scene;
   speaker.scale.set(10, 10, 10);
-  speaker.position.set(5.5, -1.2, -3); 
+  speaker.position.set(5.5, -0.2, -3); 
 
   speaker.userData = { id: 'speaker', viewOffset: { x: 5, y: 8, z: 10 } };
 
@@ -220,7 +295,7 @@ loader.load('/models/speakerSmall.glb', function (gltf) {
 loader.load('/models/eevee.glb', function (gltf) {
   const eevee = gltf.scene;
   eevee.scale.set(3, 3, 3);
-  eevee.position.set(1.7, -1.3, -2.5); 
+  eevee.position.set(1.7, -0.3, -2.5); 
 
   eevee.userData = { id: 'eevee', viewOffset: { x: 5, y: 8, z: 10 } };
   eevee.traverse((child) => {
@@ -233,28 +308,10 @@ loader.load('/models/eevee.glb', function (gltf) {
   scene.add(eevee);
 });
 
-
-loader.load('/models/bear.glb', function (gltf) {
-  const bear = gltf.scene;
-  bear.scale.set(10, 10, 10);
-  bear.position.set(20, 2, -2); 
-
-  bear.userData = { id: 'bear', viewOffset: { x: 5, y: 8, z: 10 } };
-
-  bear.traverse((child) => {
-    if (child.isMesh) {
-      child.userData = bear.userData;
-      child.castShadow = true;
-      child.receiveShadow = true;
-    }
-  });
-  scene.add(bear);
-});
-
 loader.load('/models/chairDesk.glb', function (gltf) {
   const chair = gltf.scene;
   chair.scale.set(10, 10, 10);
-  chair.position.set(11.1, -5, 0); 
+  chair.position.set(11.1, -4, 0); 
   chair.rotation.y = Math.PI;
 
   chair.userData = { id: 'chair', viewOffset: { x: 5, y: 8, z: 10 } };
@@ -271,7 +328,7 @@ loader.load('/models/chairDesk.glb', function (gltf) {
 loader.load('/models/bedSingle.glb', function (gltf) {
   const bed = gltf.scene;
   bed.scale.set(10, 10, 10);
-  bed.position.set(15, -5, 7); 
+  bed.position.set(15, -4, 7); 
 
   bed.userData = { id: 'bed', viewOffset: { x: 5, y: 8, z: 10 } };
 
@@ -288,7 +345,7 @@ loader.load('/models/bedSingle.glb', function (gltf) {
 loader.load('/models/rugRectangle.glb', function (gltf) {
   const rug = gltf.scene;
   rug.scale.set(10, 10, 10);
-  rug.position.set(2, -5, 14); 
+  rug.position.set(2, -4, 14); 
 
   rug.userData = { id: 'rug', viewOffset: { x: 5, y: 8, z: 10 } };
 
@@ -305,7 +362,7 @@ loader.load('/models/rugRectangle.glb', function (gltf) {
 loader.load('/models/monitor.glb', function (gltf) {
   const computerScreen = gltf.scene;
   computerScreen.scale.set(10, 10, 10); 
-  computerScreen.position.set(7.5, -1, -2.5); 
+  computerScreen.position.set(7.5, 0, -2.5); 
 
   computerScreen.userData = { id: 'computerScreen', viewOffset: { x: 8, y: 5, z: 8 } };
 
@@ -331,7 +388,7 @@ loader.load('/models/monitor.glb', function (gltf) {
 loader.load('/models/computerKeyboard.glb', function (gltf) {
   const computerKeyboard = gltf.scene;
   computerKeyboard.scale.set(10, 10, 10); 
-  computerKeyboard.position.set(8, -1, -0.5); 
+  computerKeyboard.position.set(8, 0, -0.5); 
 
   computerKeyboard.userData = { id: 'computerKeyboard', viewOffset: { x: 8, y: 5, z: 8 } };
 
@@ -348,7 +405,7 @@ loader.load('/models/computerKeyboard.glb', function (gltf) {
 loader.load('/models/computerMouse.glb', function (gltf) {
   const computerMouse = gltf.scene;
   computerMouse.scale.set(10, 10, 10); 
-  computerMouse.position.set(11.5, -1, -0.7); 
+  computerMouse.position.set(11.5, 0, -0.7); 
 
   computerMouse.userData = { id: 'computerMouse', viewOffset: { x: 8, y: 5, z: 8 } };
 
@@ -365,7 +422,7 @@ loader.load('/models/computerMouse.glb', function (gltf) {
 loader.load('/models/wallCornerRond.glb', function (gltf) {
   const wall = gltf.scene;
   wall.scale.set(10, 10, 10); 
-  wall.position.set(5, -5, -5); 
+  wall.position.set(5, -4, -5); 
   wall.rotation.y = Math.PI; 
 
   wall.userData = { id: 'wall', viewOffset: { x: 8, y: 5, z: 8 } };
@@ -393,7 +450,7 @@ loader.load('/models/wallCornerRond.glb', function (gltf) {
 loader.load('/models/wallCornerRond.glb', function (gltf) {
   const wall2 = gltf.scene;
   wall2.scale.set(10, 10, 10); 
-  wall2.position.set(25.5, -5, 0.5); 
+  wall2.position.set(25.5, -4, 0.5); 
   wall2.rotation.y = Math.PI / 2; 
 
   wall2.userData = { id: 'wall', viewOffset: { x: 8, y: 5, z: 8 } };
@@ -421,7 +478,7 @@ loader.load('/models/wallCornerRond.glb', function (gltf) {
 loader.load('/models/wall.glb', function (gltf) {
   const wall3 = gltf.scene;
   wall3.scale.set(10, 10, 10); 
-  wall3.position.set(15, -5, -5); 
+  wall3.position.set(15, -4, -5); 
   wall3.rotation.y = Math.PI; 
 
   wall3.userData = { id: 'wall', viewOffset: { x: 8, y: 5, z: 8 } };
@@ -449,7 +506,7 @@ loader.load('/models/wall.glb', function (gltf) {
 loader.load('/models/wall.glb', function (gltf) {
   const wall3 = gltf.scene;
   wall3.scale.set(10, 10, 10); 
-  wall3.position.set(20, -5, -5); 
+  wall3.position.set(20, -4, -5); 
   wall3.rotation.y = Math.PI; 
 
   wall3.userData = { id: 'wall', viewOffset: { x: 8, y: 5, z: 8 } };
@@ -477,7 +534,7 @@ loader.load('/models/wall.glb', function (gltf) {
 loader.load('/models/wallWindow.glb', function (gltf) {
   const wall4 = gltf.scene;
   wall4.scale.set(10, 10, 10); 
-  wall4.position.set(-0.5, -5, 0.5); 
+  wall4.position.set(-0.5, -4, 0.5); 
   wall4.rotation.y = Math.PI * 1.5; 
 
   wall4.userData = { id: 'wall', viewOffset: { x: 8, y: 5, z: 8 } };
@@ -505,7 +562,7 @@ loader.load('/models/wallWindow.glb', function (gltf) {
 loader.load('/models/wallHalf.glb', function (gltf) {
   const wall4 = gltf.scene;
   wall4.scale.set(10, 10, 10); 
-  wall4.position.set(-0.5, -5, 10.5); 
+  wall4.position.set(-0.5, -4, 10.5); 
   wall4.rotation.y = Math.PI * 1.5; 
 
   wall4.userData = { id: 'wall', viewOffset: { x: 8, y: 5, z: 8 } };
@@ -533,7 +590,7 @@ loader.load('/models/wallHalf.glb', function (gltf) {
 loader.load('/models/streetLight.glb', function (gltf) {
   const streetlight = gltf.scene;
   streetlight.scale.set(20, 20, 20); 
-  streetlight.position.set(-5, -5, -4.5); 
+  streetlight.position.set(-5, -4, -4.5); 
   streetlight.rotation.y = Math.PI / 4; 
 
   streetlight.userData = { id: 'streetlight', viewOffset: { x: 8, y: 5, z: 8 } };
