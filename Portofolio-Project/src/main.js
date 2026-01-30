@@ -6,6 +6,7 @@ import gsap from 'gsap';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
+import { CSS3DRenderer, CSS3DObject } from 'three/examples/jsm/renderers/CSS3DRenderer.js';
 
 const scene = new THREE.Scene();
 scene.fog = new THREE.FogExp2(0x000000, 0.02);
@@ -33,6 +34,13 @@ const bloomPass = new UnrealBloomPass(
     0.4,  
     0.85  
 );
+
+const cssRenderer = new CSS3DRenderer();
+cssRenderer.setSize(window.innerWidth, window.innerHeight);
+cssRenderer.domElement.style.position = 'absolute';
+cssRenderer.domElement.style.top = '0';
+cssRenderer.domElement.style.pointerEvents = 'none'; 
+document.body.appendChild(cssRenderer.domElement);
 
 const composer = new EffectComposer(renderer);
 composer.addPass(renderScene);
@@ -363,8 +371,12 @@ loader.load('/models/monitor.glb', function (gltf) {
   const computerScreen = gltf.scene;
   computerScreen.scale.set(10, 10, 10); 
   computerScreen.position.set(7.5, 0, -2.5); 
-
-  computerScreen.userData = { id: 'computerScreen', viewOffset: { x: 8, y: 5, z: 8 } };
+  
+  computerScreen.userData = { 
+    id: 'computerScreen', 
+    cameraPos: { x: 9, y: 1.8, z: -0.8 },
+    lookAt: { x: 9, y: 1.8, z: -2.5 }
+  };
 
   computerScreen.traverse((child) => {
     if (child.isMesh) {
@@ -373,12 +385,27 @@ loader.load('/models/monitor.glb', function (gltf) {
       child.receiveShadow = true;
 
       if (child.name.toLowerCase().includes('screen')) {
-          child.material = new THREE.MeshStandardMaterial({
-              color: 0xFFFFFF,        
-              emissive: 0xFFFFFF,     
-              emissiveIntensity: 0.6,   
-              toneMapped: false       
-          });
+         child.material = new THREE.MeshStandardMaterial({
+            color: 0x000000,        
+            roughness: 0.1,         
+            metalness: 0.5,         
+            emissive: 0x000000,     
+            emissiveIntensity: 0
+         });
+
+         const div = document.getElementById('pc-interface');
+         const cssObject = new CSS3DObject(div);
+
+         cssObject.rotation.y = Math.PI; 
+         cssObject.rotation.x = 172 * (Math.PI / 180);
+         cssObject.rotation.z = Math.PI;
+
+         cssObject.scale.set(0.00038, 0.00031, 0.0003); 
+         
+         cssObject.position.set(0.195, 0.17, -0.06); 
+         
+         
+         child.add(cssObject);
       }
     }
   });
@@ -624,49 +651,115 @@ loader.load('/models/streetLight.glb', function (gltf) {
 
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
+let isZoomedIn = false; 
+const pcInterface = document.getElementById('pc-interface');
 
-// window.addEventListener('click', (event) => {
-//   mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-//   mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+const initialCameraState = {
+  position: new THREE.Vector3(20, 15, 30),
+  target: new THREE.Vector3(0, 0, 0)
+};
 
-//   raycaster.setFromCamera(mouse, camera);
-//   const intersects = raycaster.intersectObjects(scene.children, true); 
+window.addEventListener('click', (event) => {
+  if (isZoomedIn) return;
 
-//   if (intersects.length > 0) {
-//     const clickedObject = intersects.find(hit => hit.object.userData.id)?.object;
+  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
-//     if (clickedObject) {
-//       const data = clickedObject.userData;
+  raycaster.setFromCamera(mouse, camera);
+  const intersects = raycaster.intersectObjects(scene.children, true); 
+
+  if (intersects.length > 0) {
+    const hit = intersects.find(hit => hit.object.userData.id);
+    const clickedObject = hit ? hit.object : null;
+
+    const allowedInteractions = ['computerScreen', 'bookcase']; 
+
+    if (clickedObject && allowedInteractions.includes(clickedObject.userData.id)) {
       
-//       const targetPosition = new THREE.Vector3();
-//       clickedObject.getWorldPosition(targetPosition);
+      const data = clickedObject.userData;
 
-//       controls.enabled = false;
+      if (data.id === 'computerScreen') {
+         zoomToScreen(data.cameraPos, data.lookAt);
+      } 
+      
+    }
+  }
+});
 
-//       gsap.to(camera.position, {
-//         x: targetPosition.x + data.viewOffset.x,
-//         y: targetPosition.y + data.viewOffset.y,
-//         z: targetPosition.z + data.viewOffset.z,
-//         duration: 1.5,
-//         ease: "power2.out"
-//       });
+const navProjects = document.getElementById('nav-projects');
 
-//       gsap.to(controls.target, {
-//         x: targetPosition.x,
-//         y: targetPosition.y + 5, 
-//         z: targetPosition.z,
-//         duration: 1.5,
-//         ease: "power2.out",
-//         onUpdate: () => {
-//              camera.lookAt(controls.target); 
-//         },
-//         onComplete: () => {
-//              controls.enabled = true;
-//         }
-//       });
-//     }
-//   }
-// });
+navProjects.addEventListener('click', (event) => {
+  event.stopPropagation(); 
+  
+  if (isZoomedIn) return;
+
+  const monitorPosition = { x: 9, y: 1.8, z: -0.8 };
+  const monitorLookAt = { x: 9, y: 1.8, z: -2.5 };
+  
+  zoomToScreen(monitorPosition, monitorLookAt);
+});
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  cssRenderer.setSize(window.innerWidth, window.innerHeight); // Add this
+});
+
+function zoomToScreen(camPos, lookAtPos) {
+  isZoomedIn = true;
+  controls.enabled = false; 
+
+  gsap.to(camera.position, {
+    x: camPos.x,
+    y: camPos.y,
+    z: camPos.z,
+    duration: 2,
+    ease: "power2.inOut"
+  });
+
+  gsap.to(controls.target, {
+    x: lookAtPos.x,
+    y: lookAtPos.y,
+    z: lookAtPos.z,
+    duration: 2,
+    ease: "power2.inOut",
+    onUpdate: () => {
+      camera.lookAt(controls.target);
+    },
+    onComplete: () => {
+      pcInterface.classList.add('active');
+    }
+  });
+}
+
+document.getElementById('exit-btn').addEventListener('click', () => {
+  pcInterface.classList.remove('active');
+
+  gsap.to(camera.position, {
+    x: initialCameraState.position.x,
+    y: initialCameraState.position.y,
+    z: initialCameraState.position.z,
+    duration: 1.5,
+    ease: "power2.out"
+  });
+
+  gsap.to(controls.target, {
+    x: initialCameraState.target.x,
+    y: initialCameraState.target.y,
+    z: initialCameraState.target.z,
+    duration: 1.5,
+    ease: "power2.out",
+    onUpdate: () => {
+      camera.lookAt(controls.target);
+    },
+    onComplete: () => {
+      isZoomedIn = false;
+      controls.enabled = true; 
+    }
+  });
+});
 
 
 function animate() {
@@ -675,6 +768,7 @@ function animate() {
   controls.update();
   
   composer.render(scene, camera);
+  cssRenderer.render(scene, camera);
 }
 
 window.addEventListener('resize', () => {
