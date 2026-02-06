@@ -8,6 +8,11 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import { CSS3DRenderer, CSS3DObject } from 'three/examples/jsm/renderers/CSS3DRenderer.js';
 
+
+//---- Scene Setup ----//
+
+let zoom_sound = new Audio('/audio/zoom_sound.mp3');
+let zoom_sound_reverse = new Audio('/audio/zoom_sound_reverse.mp3');
 const scene = new THREE.Scene();
 scene.fog = new THREE.FogExp2(0x000000, 0.02);
 scene.background = new THREE.Color(0x000000);
@@ -52,11 +57,16 @@ controls.dampingFactor = 0.05;
 controls.maxPolarAngle = Math.PI / 2; 
 // controls.maxDistance = 50;
 
+const loader = new GLTFLoader();
+
+//---- Lights ----//
 
 const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
 directionalLight.position.set(500, 500, 500);
 directionalLight.castShadow = true;
 scene.add(directionalLight);
+
+//---- Textures and Materials ----//
 
 const textureLoader = new THREE.TextureLoader();
 const floorColor = textureLoader.load('/textures/metal_color.jpg');
@@ -113,6 +123,27 @@ const outsideFloorMaterial = new THREE.MeshStandardMaterial({
     metalness: 0                
 });
 
+const furnitureColor = textureLoader.load('/textures/wood_furniture_color.jpg');
+const furnitureRoughness = textureLoader.load('/textures/wood_furniture_Roughness.jpg');
+const furnitureNormal = textureLoader.load('/textures/wood_furniture_Normal.png');
+
+[furnitureColor, furnitureRoughness, furnitureNormal].forEach(tex => {
+    tex.wrapS = THREE.RepeatWrapping;
+    tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(0.2, 0.2); 
+});
+
+const furnitureMaterial = new THREE.MeshStandardMaterial({
+    map: furnitureColor,              
+    roughnessMap: furnitureRoughness, 
+    normalMap: furnitureNormal,       
+    roughness: 1,               
+    metalness: 0                
+});
+
+
+//---- Floor Setup ----//
+
 const floorGeometry = new THREE.BoxGeometry(125, 1, 125); 
 const floor = new THREE.Mesh(floorGeometry, floorMaterial);
 floor.position.y = -5.5; 
@@ -138,8 +169,8 @@ lShape.lineTo(-10.5, 15.5);
 lShape.lineTo(-10.5, -10.0);
 
 const extrudeSettings = {
-  depth: 3,           // Thickness of the floor
-  bevelEnabled: false // Sharp edges (no round corners)
+  depth: 3,           
+  bevelEnabled: false 
 };
 
 const lShapeGeometry = new THREE.ExtrudeGeometry(lShape, extrudeSettings);
@@ -155,7 +186,6 @@ fullOutsideFloor.position.y = -4;
 fullOutsideFloor.receiveShadow = true;
 scene.add(fullOutsideFloor);
 
-
 const BoxGeometry = new THREE.BoxGeometry(1.48, 1, 1.48);
 const BoxMaterial = new THREE.MeshStandardMaterial({ color: 0xC4A484 });
 const box = new THREE.Mesh(BoxGeometry, BoxMaterial);
@@ -164,218 +194,165 @@ box.castShadow = true;
 box.receiveShadow = true;
 scene.add(box);
 
-const loader = new GLTFLoader();
+//---- Functions ----//
 
-loader.load('/models/bookcaseClosed.glb', function (gltf) {
-  const bookcase = gltf.scene;
-  bookcase.scale.set(10, 10, 10); 
-  bookcase.position.set(0.5, -4, -1.5); 
+function loadAsset(path, scale, position, rotation, userData, materialOverride = null) {
+  loader.load(path, function (gltf) {
+    const model = gltf.scene;
+    model.scale.set(scale.x, scale.y, scale.z); 
+    model.position.set(position.x, position.y, position.z);
+    if (rotation) {
+      model.rotation.set(rotation.x, rotation.y, rotation.z);
+    }
+    model.userData = userData;
+
+    model.traverse((child) => {
+      if (child.isMesh) {
+        child.userData = userData; 
+        if (materialOverride) {
+          if (typeof materialOverride === 'function') {
+                materialOverride(child);
+            }
+            else if (materialOverride.isMaterial) {
+                child.material = materialOverride;
+            }
+        }
+        child.castShadow = true;
+        child.receiveShadow = true;
+      }
+    });
+    scene.add(model);
+  })
+};
+
+function animate() {
+  requestAnimationFrame(animate);
   
-  bookcase.userData = { id: 'bookcase', viewOffset: { x: 8, y: 5, z: 8 } };
-
-  bookcase.traverse((child) => {
-    if (child.isMesh) {
-      child.userData = bookcase.userData; 
-      child.castShadow = true;
-      child.receiveShadow = true;
-    }
-  });
-  scene.add(bookcase);
-});
-
-loader.load('/models/books.glb', function (gltf) {
-  const book = gltf.scene;
-  book.scale.set(10, 10, 10); 
-  book.position.set(1, 2.1, -2); 
-
-  book.userData = { id: 'book', viewOffset: { x: 8, y: 5, z: 8 } };
-  book.traverse((child) => {
-    if (child.isMesh) {
-      child.userData = book.userData; 
-      child.castShadow = true;
-      child.receiveShadow = true;
-    }
-  });
-  scene.add(book);
-});
-
-loader.load('/models/plantSmall1.glb', function (gltf) {
-  const plant = gltf.scene;
-  plant.scale.set(10, 10, 10); 
-  plant.position.set(3, -0.3, -2.2); 
-
-  plant.userData = { id: 'plant', viewOffset: { x: 8, y: 5, z: 8 } };
-  plant.traverse((child) => {
-    if (child.isMesh) {
-      child.userData = plant.userData; 
-      child.castShadow = true;
-      child.receiveShadow = true;
-    }
-  });
-  scene.add(plant);
-});
-
-loader.load('/models/desk.glb', function (gltf) {
-  const desk = gltf.scene;
-  desk.scale.set(10, 10, 10);
-  desk.position.set(5, -4, -0.5); 
-
-  desk.userData = { id: 'desk', viewOffset: { x: 5, y: 8, z: 10 } };
-
-  desk.traverse((child) => {
-    if (child.isMesh) {
-      child.userData = desk.userData;
-      child.castShadow = true;
-      child.receiveShadow = true;
-    }
-  });
-  scene.add(desk);
-});
-
-loader.load('/models/desk.glb', function (gltf) {
-  const desk = gltf.scene;
-  desk.scale.set(10, 10, 10);
-  desk.position.set(5, -4, -0.5); 
-
-  desk.userData = { id: 'desk', viewOffset: { x: 5, y: 8, z: 10 } };
-
-  desk.traverse((child) => {
-    if (child.isMesh) {
-      child.userData = desk.userData;
-      child.castShadow = true;
-      child.receiveShadow = true;
-    }
-  });
-  scene.add(desk);
-});
-
-loader.load('/models/speaker.glb', function (gltf) {
-  const speaker = gltf.scene;
-  speaker.scale.set(10, 10, 10);
-  speaker.position.set(12.5, -3.5, -3); 
-
-  speaker.userData = { id: 'speaker', viewOffset: { x: 5, y: 8, z: 10 } };
-
-  speaker.traverse((child) => {
-    if (child.isMesh) {
-      child.userData = speaker.userData;
-      child.castShadow = true;
-      child.receiveShadow = true;
-    }
-  });
-  scene.add(speaker);
-});
-
-loader.load('/models/custom_gaming_pc.glb', function (gltf) {
-  const custom_gaming_pc = gltf.scene;
-  custom_gaming_pc.scale.set(0.5, 0.5, 0.5);
-  custom_gaming_pc.position.set(9, -2.6, -2.2); 
-
-  custom_gaming_pc.userData = { id: 'custom_gaming_pc', viewOffset: { x: 5, y: 8, z: 10 } };
-  custom_gaming_pc.traverse((child) => {
-    if (child.isMesh) {
-      child.userData = custom_gaming_pc.userData;
-      child.castShadow = true;
-      child.receiveShadow = true;
-    }
-  });
-  scene.add(custom_gaming_pc);
-});
+  controls.update();
+  
+  composer.render(scene, camera);
+  cssRenderer.render(scene, camera);
+}
 
 
-loader.load('/models/speakerSmall.glb', function (gltf) {
-  const speaker = gltf.scene;
-  speaker.scale.set(10, 10, 10);
-  speaker.position.set(5.5, -0.2, -3); 
+//---- Load Models ----//
 
-  speaker.userData = { id: 'speaker', viewOffset: { x: 5, y: 8, z: 10 } };
+loadAsset(
+  '/models/bookcaseClosed.glb',
+  { x: 10, y: 10, z: 10 },
+  { x: 0.5, y: -4, z: -1.5 },
+  null,
+  { id: 'bookcase', viewOffset: { x: 8, y: 5, z: 8 } },
+  furnitureMaterial
+);
 
-  speaker.traverse((child) => {
-    if (child.isMesh) {
-      child.userData = speaker.userData;
-      child.castShadow = true;
-      child.receiveShadow = true;
-    }
-  });
-  scene.add(speaker);
-});
+loadAsset(
+  '/models/books.glb',
+  { x: 10, y: 10, z: 10 },
+  { x: 1, y: 2.1, z: -2 },
+  null,
+  { id: 'book', viewOffset: { x: 8, y: 5, z: 8 } }
+);
 
-loader.load('/models/eevee.glb', function (gltf) {
-  const eevee = gltf.scene;
-  eevee.scale.set(3, 3, 3);
-  eevee.position.set(1.7, -0.3, -2.5); 
+loadAsset(
+  '/models/plantSmall1.glb',
+  { x: 10, y: 10, z: 10 },
+  { x: 3, y: -0.3, z: -2.2 },
+  null,
+  { id: 'plant', viewOffset: { x: 8, y: 5, z: 8 } },
+);
 
-  eevee.userData = { id: 'eevee', viewOffset: { x: 5, y: 8, z: 10 } };
-  eevee.traverse((child) => {
-    if (child.isMesh) {
-      child.userData = eevee.userData;
-      child.castShadow = true;
-      child.receiveShadow = true;
-    }
-  });
-  scene.add(eevee);
-});
+loadAsset(
+  '/models/desk.glb',
+  { x: 10, y: 10, z: 10 },
+  { x: 5, y: -4, z: -0.5 },
+  null,
+  { id: 'desk', viewOffset: { x: 5, y: 8, z: 10 } },
+  furnitureMaterial
+);
 
-loader.load('/models/chairDesk.glb', function (gltf) {
-  const chair = gltf.scene;
-  chair.scale.set(10, 10, 10);
-  chair.position.set(11.1, -4, 0); 
-  chair.rotation.y = Math.PI;
+loadAsset(
+  '/models/speaker.glb',
+  { x: 10, y: 10, z: 10 },
+  { x: 12.5, y: -3.5, z: -3 },
+  null,
+  { id: 'speaker', viewOffset: { x: 5, y: 8, z: 10 } }
+);
 
-  chair.userData = { id: 'chair', viewOffset: { x: 5, y: 8, z: 10 } };
-  chair.traverse((child) => {
-    if (child.isMesh) {
-      child.userData = chair.userData;
-      child.castShadow = true;
-      child.receiveShadow = true;
-    }
-  });
-  scene.add(chair);
-});
+loadAsset(
+  '/models/custom_gaming_pc.glb',
+  { x: 0.5, y: 0.5, z: 0.5 },
+  { x: 9, y: -2.6, z: -2.2 },
+  null,
+  { id: 'custom_gaming_pc', viewOffset: { x: 5, y: 8, z: 10 } }
+);
 
-loader.load('/models/bedSingle.glb', function (gltf) {
-  const bed = gltf.scene;
-  bed.scale.set(10, 10, 10);
-  bed.position.set(15, -4, 7); 
+loadAsset(
+  '/models/speakerSmall.glb',
+  { x: 10, y: 10, z: 10 },
+  { x: 5.5, y: -0.2, z: -3 },
+  null,
+  { id: 'speakerSmall', viewOffset: { x: 5, y: 8, z: 10 } }
+);
 
-  bed.userData = { id: 'bed', viewOffset: { x: 5, y: 8, z: 10 } };
+loadAsset(
+  '/models/eevee.glb',
+  { x: 3, y: 3, z: 3 },
+  { x: 1.7, y: -0.3, z: -2.5 },
+  null,
+  { id: 'eevee', viewOffset: { x: 5, y: 8, z: 10 } }
+);
 
-  bed.traverse((child) => {
-    if (child.isMesh) {
-      child.userData = bed.userData;
-      child.castShadow = true;
-      child.receiveShadow = true;
-    }
-  });
-  scene.add(bed);
-});
+loadAsset(
+  '/models/chairDesk.glb',
+  { x: 10, y: 10, z: 10 },
+  { x: 11.1, y: -4, z: 0 },
+  { x: 0, y: Math.PI, z: 0 },
+  { id: 'chair', viewOffset: { x: 5, y: 8, z: 10 } }
+);
 
-loader.load('/models/rugRectangle.glb', function (gltf) {
-  const rug = gltf.scene;
-  rug.scale.set(10, 10, 10);
-  rug.position.set(2, -4, 14); 
+loadAsset(
+  '/models/bedSingle.glb',
+  { x: 10, y: 10, z: 10 },
+  { x: 15, y: -4, z: 7 },
+  null,
+  { id: 'bed', viewOffset: { x: 5, y: 8, z: 10 } }
+);
 
-  rug.userData = { id: 'rug', viewOffset: { x: 5, y: 8, z: 10 } };
+loadAsset(
+  '/models/tableCoffeeSquare.glb',
+  { x: 10, y: 10, z: 10 },
+  { x: 19.4, y: -4, z: -1.4 },
+  null,
+  { id: 'tableCoffee', viewOffset: { x: 5, y: 8, z: 10 } },
+  furnitureMaterial
+);
 
-  rug.traverse((child) => {
-    if (child.isMesh) {
-      child.userData = rug.userData;
-      child.castShadow = true;
-      child.receiveShadow = true;
-    }
-  });
-  scene.add(rug);
-});
+loadAsset(
+  '/models/phone2.glb',
+  { x: 0.8, y: 0.8, z: 0.8 },
+  { x: 17, y: -1.7, z: -2 },
+  { x: 0, y: Math.PI, z: 0 },
+  { id: 'phone', cameraPos: { x: 17, y: 1, z: -1 }, lookAt: { x: 17, y: -2.5, z: -3.5 }, viewOffset: { x: 5, y: 8, z: 10 } }
+);
+
+loadAsset(
+  '/models/rugRectangle.glb',
+  { x: 10, y: 10, z: 10 },
+  { x: 2, y: -4, z: 14 },
+  null,
+  { id: 'rug', viewOffset: { x: 5, y: 8, z: 10 } }
+);
 
 loader.load('/models/monitor.glb', function (gltf) {
   const computerScreen = gltf.scene;
   computerScreen.scale.set(10, 10, 10); 
-  computerScreen.position.set(7.5, 0, -2.5); 
+  computerScreen.position.set(7.5, -0.25, -2.5); 
   
   computerScreen.userData = { 
     id: 'computerScreen', 
-    cameraPos: { x: 9, y: 1.8, z: -0.8 },
-    lookAt: { x: 9, y: 1.8, z: -2.5 }
+    cameraPos: { x: 9, y: 1.3, z: -0.8 },
+    lookAt: { x: 9, y: 1.3, z: -2.5 }
   };
 
   computerScreen.traverse((child) => {
@@ -402,7 +379,7 @@ loader.load('/models/monitor.glb', function (gltf) {
 
          cssObject.scale.set(0.00038, 0.00031, 0.0003); 
          
-         cssObject.position.set(0.195, 0.17, -0.06); 
+         cssObject.position.set(0.195, 0.171, -0.06); 
          
          
          child.add(cssObject);
@@ -412,207 +389,105 @@ loader.load('/models/monitor.glb', function (gltf) {
   scene.add(computerScreen);
 });
 
-loader.load('/models/computerKeyboard.glb', function (gltf) {
-  const computerKeyboard = gltf.scene;
-  computerKeyboard.scale.set(10, 10, 10); 
-  computerKeyboard.position.set(8, 0, -0.5); 
+loadAsset(
+  '/models/computerKeyboard.glb',
+  { x: 10, y: 10, z: 10 },
+  { x: 8, y: -0.25, z: -0.5 },
+  null,
+  { id: 'computerKeyboard', viewOffset: { x: 8, y: 5, z: 8 } }
+);
 
-  computerKeyboard.userData = { id: 'computerKeyboard', viewOffset: { x: 8, y: 5, z: 8 } };
+loadAsset(
+  '/models/computerMouse.glb',
+  { x: 10, y: 10, z: 10 },
+  { x: 11.5, y: -0.25, z: -0.7 },
+  null,
+  { id: 'computerMouse', viewOffset: { x: 8, y: 5, z: 8 } }
+);
 
-  computerKeyboard.traverse((child) => {
-    if (child.isMesh) {
-      child.userData = computerKeyboard.userData; 
-      child.castShadow = true;
-      child.receiveShadow = true;
-    }
-  });
-  scene.add(computerKeyboard);
-});
+loadAsset(
+  '/models/wallCornerRond.glb',
+  { x: 10, y: 10, z: 10 },
+  { x: 5, y: -4, z: -5 },
+  { x: 0, y: Math.PI, z: 0 },
+  { id: 'wall', viewOffset: { x: 8, y: 5, z: 8 } },
+  (mesh) => {
+      mesh.material.metalness = 0.1;
+      mesh.material.roughness = 0.8;
+      mesh.material.side = THREE.DoubleSide;
+      mesh.material.needsUpdate = true;
+  }
+);
 
-loader.load('/models/computerMouse.glb', function (gltf) {
-  const computerMouse = gltf.scene;
-  computerMouse.scale.set(10, 10, 10); 
-  computerMouse.position.set(11.5, 0, -0.7); 
+loadAsset(
+  'models/wallCornerRond.glb',
+  { x: 10, y: 10, z: 10 },
+  { x: 25.5, y: -4, z: 0.5 },
+  { x: 0, y: Math.PI / 2, z: 0 },
+  { id: 'wall', viewOffset: { x: 8, y: 5, z: 8 } },
+  (mesh) => {
+      mesh.material.metalness = 0.1;
+      mesh.material.roughness = 0.8;
+      mesh.material.side = THREE.DoubleSide;
+      mesh.material.needsUpdate = true;
+  }
+);
 
-  computerMouse.userData = { id: 'computerMouse', viewOffset: { x: 8, y: 5, z: 8 } };
+loadAsset(
+  '/models/wall.glb',
+  { x: 10, y: 10, z: 10 },
+  { x: 15, y: -4, z: -5 },
+  { x: 0, y: Math.PI, z: 0 },
+  { id: 'wall', viewOffset: { x: 8, y: 5, z: 8 } },
+  (mesh) => {
+      mesh.material.metalness = 0.1;
+      mesh.material.roughness = 0.8;
+      mesh.material.side = THREE.DoubleSide;
+      mesh.material.needsUpdate = true;
+  }
+);
 
-  computerMouse.traverse((child) => {
-    if (child.isMesh) {
-      child.userData = computerMouse.userData; 
-      child.castShadow = true;
-      child.receiveShadow = true;
-    }
-  });
-  scene.add(computerMouse);
-});
+loadAsset(
+  '/models/wall.glb',
+  { x: 10, y: 10, z: 10 },
+  { x: 20, y: -4, z: -5 },
+  { x: 0, y: Math.PI, z: 0 },
+  { id: 'wall', viewOffset: { x: 8, y: 5, z: 8 } },
+  (mesh) => {
+      mesh.material.metalness = 0.1;
+      mesh.material.roughness = 0.8;
+      mesh.material.side = THREE.DoubleSide;
+      mesh.material.needsUpdate = true;
+  }
+);
 
-loader.load('/models/wallCornerRond.glb', function (gltf) {
-  const wall = gltf.scene;
-  wall.scale.set(10, 10, 10); 
-  wall.position.set(5, -4, -5); 
-  wall.rotation.y = Math.PI; 
+loadAsset(
+  '/models/wallWindow.glb',
+  { x: 10, y: 10, z: 10 },
+  { x: -0.5, y: -4, z: 0.5 },
+  { x: 0, y: Math.PI * 1.5, z: 0 },
+  { id: 'wall', viewOffset: { x: 8, y: 5, z: 8 } },
+  (mesh) => {
+      mesh.material.metalness = 0.1;
+      mesh.material.roughness = 0.8;
+      mesh.material.side = THREE.DoubleSide;
+      mesh.material.needsUpdate = true;
+  }
+);
 
-  wall.userData = { id: 'wall', viewOffset: { x: 8, y: 5, z: 8 } };
-  wall.traverse((child) => {
-    if (child.isMesh) {
-      child.userData = wall.userData; 
-      child.castShadow = true;
-      child.receiveShadow = true;
-
-      if (child.material) {
-        child.material.metalness = 0.1; 
-        
-        child.material.roughness = 0.8;
-
-        child.material.side = THREE.DoubleSide; 
-
-        child.material.needsUpdate = true;
-      }
-
-    }
-  });
-  scene.add(wall);
-});
-
-loader.load('/models/wallCornerRond.glb', function (gltf) {
-  const wall2 = gltf.scene;
-  wall2.scale.set(10, 10, 10); 
-  wall2.position.set(25.5, -4, 0.5); 
-  wall2.rotation.y = Math.PI / 2; 
-
-  wall2.userData = { id: 'wall', viewOffset: { x: 8, y: 5, z: 8 } };
-  wall2.traverse((child) => {
-    if (child.isMesh) {
-      child.userData = wall2.userData; 
-      child.castShadow = true;
-      child.receiveShadow = true;
-
-      if (child.material) {
-        child.material.metalness = 0.1; 
-        
-        child.material.roughness = 0.8;
-
-        child.material.side = THREE.DoubleSide; 
-
-        child.material.needsUpdate = true;
-      }
-
-    }
-  });
-  scene.add(wall2);
-});
-
-loader.load('/models/wall.glb', function (gltf) {
-  const wall3 = gltf.scene;
-  wall3.scale.set(10, 10, 10); 
-  wall3.position.set(15, -4, -5); 
-  wall3.rotation.y = Math.PI; 
-
-  wall3.userData = { id: 'wall', viewOffset: { x: 8, y: 5, z: 8 } };
-  wall3.traverse((child) => {
-    if (child.isMesh) {
-      child.userData = wall3.userData; 
-      child.castShadow = true;
-      child.receiveShadow = true;
-
-      if (child.material) {
-        child.material.metalness = 0.1; 
-        
-        child.material.roughness = 0.8;
-
-        child.material.side = THREE.DoubleSide; 
-
-        child.material.needsUpdate = true;
-      }
-
-    }
-  });
-  scene.add(wall3);
-});
-
-loader.load('/models/wall.glb', function (gltf) {
-  const wall3 = gltf.scene;
-  wall3.scale.set(10, 10, 10); 
-  wall3.position.set(20, -4, -5); 
-  wall3.rotation.y = Math.PI; 
-
-  wall3.userData = { id: 'wall', viewOffset: { x: 8, y: 5, z: 8 } };
-  wall3.traverse((child) => {
-    if (child.isMesh) {
-      child.userData = wall3.userData; 
-      child.castShadow = true;
-      child.receiveShadow = true;
-
-      if (child.material) {
-        child.material.metalness = 0.1; 
-        
-        child.material.roughness = 0.8;
-
-        child.material.side = THREE.DoubleSide; 
-
-        child.material.needsUpdate = true;
-      }
-
-    }
-  });
-  scene.add(wall3);
-});
-
-loader.load('/models/wallWindow.glb', function (gltf) {
-  const wall4 = gltf.scene;
-  wall4.scale.set(10, 10, 10); 
-  wall4.position.set(-0.5, -4, 0.5); 
-  wall4.rotation.y = Math.PI * 1.5; 
-
-  wall4.userData = { id: 'wall', viewOffset: { x: 8, y: 5, z: 8 } };
-  wall4.traverse((child) => {
-    if (child.isMesh) {
-      child.userData = wall4.userData; 
-      child.castShadow = true;
-      child.receiveShadow = true;
-
-      if (child.material) {
-        child.material.metalness = 0.1; 
-        
-        child.material.roughness = 0.8;
-
-        child.material.side = THREE.DoubleSide; 
-
-        child.material.needsUpdate = true;
-      }
-
-    }
-  });
-  scene.add(wall4);
-});
-
-loader.load('/models/wallHalf.glb', function (gltf) {
-  const wall4 = gltf.scene;
-  wall4.scale.set(10, 10, 10); 
-  wall4.position.set(-0.5, -4, 10.5); 
-  wall4.rotation.y = Math.PI * 1.5; 
-
-  wall4.userData = { id: 'wall', viewOffset: { x: 8, y: 5, z: 8 } };
-  wall4.traverse((child) => {
-    if (child.isMesh) {
-      child.userData = wall4.userData; 
-      child.castShadow = true;
-      child.receiveShadow = true;
-
-      if (child.material) {
-        child.material.metalness = 0.1; 
-        
-        child.material.roughness = 0.8;
-
-        child.material.side = THREE.DoubleSide; 
-
-        child.material.needsUpdate = true;
-      }
-
-    }
-  });
-  scene.add(wall4);
-});
+loadAsset(
+  '/models/wallHalf.glb',
+  { x: 10, y: 10, z: 10 },
+  { x: -0.5, y: -4, z: 10.5 },
+  { x: 0, y: Math.PI * 1.5, z: 0 },
+  { id: 'wall', viewOffset: { x: 8, y: 5, z: 8 } },
+  (mesh) => {
+      mesh.material.metalness = 0.1;
+      mesh.material.roughness = 0.8;
+      mesh.material.side = THREE.DoubleSide;
+      mesh.material.needsUpdate = true;
+  }
+);
 
 loader.load('/models/streetLight.glb', function (gltf) {
   const streetlight = gltf.scene;
@@ -648,7 +523,7 @@ loader.load('/models/streetLight.glb', function (gltf) {
   scene.add(streetlight);
 });
 
-
+//---- Interaction and Animation ----//
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 let isZoomedIn = false; 
@@ -672,15 +547,20 @@ window.addEventListener('click', (event) => {
     const hit = intersects.find(hit => hit.object.userData.id);
     const clickedObject = hit ? hit.object : null;
 
-    const allowedInteractions = ['computerScreen', 'bookcase']; 
+    const allowedInteractions = ['computerScreen', 'bookcase', 'phone']; 
 
     if (clickedObject && allowedInteractions.includes(clickedObject.userData.id)) {
       
       const data = clickedObject.userData;
 
       if (data.id === 'computerScreen') {
+         zoom_sound.play();
          zoomToScreen(data.cameraPos, data.lookAt);
       } 
+      else if(data.id === 'phone'){
+         zoom_sound.play();
+         zoomToScreen(data.cameraPos, data.lookAt);
+      }
       
     }
   }
@@ -693,8 +573,8 @@ navProjects.addEventListener('click', (event) => {
   
   if (isZoomedIn) return;
 
-  const monitorPosition = { x: 9, y: 1.8, z: -0.8 };
-  const monitorLookAt = { x: 9, y: 1.8, z: -2.5 };
+  const monitorPosition = { x: 9, y: 1.3, z: -0.8 };
+  const monitorLookAt = { x: 9, y: 1.3, z: -2.5 };
   
   zoomToScreen(monitorPosition, monitorLookAt);
 });
@@ -704,7 +584,7 @@ window.addEventListener('resize', () => {
   camera.updateProjectionMatrix();
   
   renderer.setSize(window.innerWidth, window.innerHeight);
-  cssRenderer.setSize(window.innerWidth, window.innerHeight); // Add this
+  cssRenderer.setSize(window.innerWidth, window.innerHeight);
 });
 
 function zoomToScreen(camPos, lookAtPos) {
@@ -736,6 +616,7 @@ function zoomToScreen(camPos, lookAtPos) {
 
 document.getElementById('exit-btn').addEventListener('click', () => {
   pcInterface.classList.remove('active');
+  zoom_sound_reverse.play();
 
   gsap.to(camera.position, {
     x: initialCameraState.position.x,
@@ -759,22 +640,6 @@ document.getElementById('exit-btn').addEventListener('click', () => {
       controls.enabled = true; 
     }
   });
-});
-
-
-function animate() {
-  requestAnimationFrame(animate);
-  
-  controls.update();
-  
-  composer.render(scene, camera);
-  cssRenderer.render(scene, camera);
-}
-
-window.addEventListener('resize', () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
 animate();
