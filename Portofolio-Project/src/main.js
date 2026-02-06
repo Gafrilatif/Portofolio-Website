@@ -225,6 +225,33 @@ function loadAsset(path, scale, position, rotation, userData, materialOverride =
   })
 };
 
+function zoomToScreen(camPos, lookAtPos) {
+  isZoomedIn = true;
+  controls.enabled = false; 
+
+  gsap.to(camera.position, {
+    x: camPos.x,
+    y: camPos.y,
+    z: camPos.z,
+    duration: 2,
+    ease: "power2.inOut"
+  });
+
+  gsap.to(controls.target, {
+    x: lookAtPos.x,
+    y: lookAtPos.y,
+    z: lookAtPos.z,
+    duration: 2,
+    ease: "power2.inOut",
+    onUpdate: () => {
+      camera.lookAt(controls.target);
+    },
+    onComplete: () => {
+      pcInterface.classList.add('active');
+    }
+  });
+}
+
 function animate() {
   requestAnimationFrame(animate);
   
@@ -586,33 +613,6 @@ window.addEventListener('resize', () => {
   renderer.setSize(window.innerWidth, window.innerHeight);
   cssRenderer.setSize(window.innerWidth, window.innerHeight);
 });
-
-function zoomToScreen(camPos, lookAtPos) {
-  isZoomedIn = true;
-  controls.enabled = false; 
-
-  gsap.to(camera.position, {
-    x: camPos.x,
-    y: camPos.y,
-    z: camPos.z,
-    duration: 2,
-    ease: "power2.inOut"
-  });
-
-  gsap.to(controls.target, {
-    x: lookAtPos.x,
-    y: lookAtPos.y,
-    z: lookAtPos.z,
-    duration: 2,
-    ease: "power2.inOut",
-    onUpdate: () => {
-      camera.lookAt(controls.target);
-    },
-    onComplete: () => {
-      pcInterface.classList.add('active');
-    }
-  });
-}
 
 document.getElementById('exit-btn').addEventListener('click', () => {
   pcInterface.classList.remove('active');
