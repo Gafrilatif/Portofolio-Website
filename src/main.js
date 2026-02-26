@@ -7,9 +7,12 @@ import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import { CSS3DRenderer, CSS3DObject } from 'three/examples/jsm/renderers/CSS3DRenderer.js';
+import { Howl } from 'howler';
 
 
 //---- Scene Setup ----//
+
+
 
 let zoom_sound = new Audio('/audio/zoom_sound.mp3');
 let zoom_sound_reverse = new Audio('/audio/zoom_sound_reverse.mp3');
@@ -57,18 +60,31 @@ controls.dampingFactor = 0.05;
 controls.maxPolarAngle = Math.PI / 2; 
 // controls.maxDistance = 50;
 
-const loader = new GLTFLoader();
+const loadingManager = new THREE.LoadingManager();
 
-//---- Lights ----//
+loadingManager.onProgress = function(url, itemsLoaded, itemsTotal) {
+  const progressBar = document.getElementById('progress-bar');
+  const percentage = (itemsLoaded / itemsTotal) * 100;
+  progressBar.style.width = percentage + '%';
+};
 
-const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-directionalLight.position.set(500, 500, 500);
-directionalLight.castShadow = true;
-scene.add(directionalLight);
+loadingManager.onLoad = function() {
+  const loadingScreen = document.getElementById('loading-screen');
+  
+  loadingScreen.style.opacity = '0';
+  
+  setTimeout(() => {
+    loadingScreen.style.display = 'none';
+  }, 1000); 
+};
+
+
+const loader = new GLTFLoader(loadingManager); 
+
 
 //---- Textures and Materials ----//
 
-const textureLoader = new THREE.TextureLoader();
+const textureLoader = new THREE.TextureLoader(loadingManager);
 const floorColor = textureLoader.load('/textures/metal_color.jpg');
 const floorRoughness = textureLoader.load('/textures/metal_roughness.jpg');
 const floorNormal = textureLoader.load('/textures/metal_normal.png');
@@ -225,7 +241,7 @@ function loadAsset(path, scale, position, rotation, userData, materialOverride =
   })
 };
 
-function zoomToScreen(camPos, lookAtPos) {
+function zoomToScreen(camPos, lookAtPos, targetID) {
   isZoomedIn = true;
   controls.enabled = false; 
 
@@ -247,7 +263,45 @@ function zoomToScreen(camPos, lookAtPos) {
       camera.lookAt(controls.target);
     },
     onComplete: () => {
-      pcInterface.classList.add('active');
+      if (targetID === 'computerScreen') {
+         document.getElementById('pc-interface').classList.add('active');
+      } else if (targetID === 'phone') {
+         document.getElementById('phone-interface').classList.add('active');
+      }
+    }
+  });
+}
+
+function zoomOut() {
+  if (!isZoomedIn) return;
+
+  if (typeof closeProject === 'function') closeProject();
+
+  document.getElementById('pc-interface').classList.remove('active');
+  document.getElementById('phone-interface').classList.remove('active');
+
+  zoom_sound_reverse.play();
+
+  gsap.to(camera.position, {
+    x: initialCameraState.position.x,
+    y: initialCameraState.position.y,
+    z: initialCameraState.position.z,
+    duration: 1.5,
+    ease: "power2.out"
+  });
+
+  gsap.to(controls.target, {
+    x: initialCameraState.target.x,
+    y: initialCameraState.target.y,
+    z: initialCameraState.target.z,
+    duration: 1.5,
+    ease: "power2.out",
+    onUpdate: () => {
+      camera.lookAt(controls.target);
+    },
+    onComplete: () => {
+      isZoomedIn = false;
+      controls.enabled = true; 
     }
   });
 }
@@ -256,6 +310,13 @@ function animate() {
   requestAnimationFrame(animate);
   
   controls.update();
+
+  Howler.pos(camera.position.x, camera.position.y, camera.position.z);
+
+  const forward = new THREE.Vector3();
+  camera.getWorldDirection(forward);
+
+  Howler.orientation(forward.x, forward.y, forward.z, 0, 1, 0);
   
   composer.render(scene, camera);
   cssRenderer.render(scene, camera);
@@ -263,6 +324,37 @@ function animate() {
 
 
 //---- Load Models ----//
+
+loadAsset(
+  '/models/lightBulb.glb',
+  { x: 10, y: 10, z: 10 },
+  { x: 10, y: 15, z: 5 },
+  { x: Math.PI, y: 0, z: 0 },
+  { id: 'lightBulb', viewOffset: { x: 8, y: 5, z: 8 } },
+  (mesh) => {
+    if (mesh.name.toLowerCase().includes('object_4') || mesh.name.toLowerCase().includes('glass') || mesh.name.toLowerCase().includes('light')) {
+        
+        console.log("✅ MAKING IT GLOW:", mesh.name);
+
+        mesh.material = new THREE.MeshStandardMaterial({
+            color: 0xffaa00,       
+            emissive: 0xffaa00,    
+            emissiveIntensity: 0.5, 
+            toneMapped: true,     
+            roughness: 0.4,
+            metalness: 0,
+            transparent: true,
+            opacity: 0.3
+        });
+
+        const light = new THREE.PointLight(0xffaa00, 400, 30);
+        light.position.set(0, 3, 0);
+        light.castShadow = true;
+        
+        mesh.add(light);
+    }
+  }
+);
 
 loadAsset(
   '/models/bookcaseClosed.glb',
@@ -360,7 +452,26 @@ loadAsset(
   { x: 0.8, y: 0.8, z: 0.8 },
   { x: 17, y: -1.7, z: -2 },
   { x: 0, y: Math.PI, z: 0 },
-  { id: 'phone', cameraPos: { x: 17, y: 1, z: -1 }, lookAt: { x: 17, y: -2.5, z: -3.5 }, viewOffset: { x: 5, y: 8, z: 10 } }
+  { id: 'phone', cameraPos: { x: 17, y: 0.5, z: -2.2 }, lookAt: { x: 17, y: -2.5, z: -3.5 } },
+  (mesh) => {
+    if (mesh.name.toLowerCase().includes('phonedetails_phonedetails_0')) {
+       
+       console.log("✅ ATTACHING HTML TO:", mesh.name);
+
+       const phoneDiv = document.getElementById('phone-interface');
+       const cssPhone = new CSS3DObject(phoneDiv);
+
+       cssPhone.scale.set(0.1, 0.1, 0.1); 
+       
+       cssPhone.position.set(-34, -43, 0); 
+       
+       cssPhone.rotation.y = Math.PI; 
+       cssPhone.rotation.x = 165 * (Math.PI / 180);
+       cssPhone.rotation.z = 0;
+
+       mesh.add(cssPhone);
+    }
+  }
 );
 
 loadAsset(
@@ -371,29 +482,24 @@ loadAsset(
   { id: 'rug', viewOffset: { x: 5, y: 8, z: 10 } }
 );
 
-loader.load('/models/monitor.glb', function (gltf) {
-  const computerScreen = gltf.scene;
-  computerScreen.scale.set(10, 10, 10); 
-  computerScreen.position.set(7.5, -0.25, -2.5); 
-  
-  computerScreen.userData = { 
+loadAsset(
+  '/models/monitor.glb',
+  { x: 10, y: 10, z: 10 },         
+  { x: 7.5, y: -0.25, z: -2.5 },   
+  null,                            
+  {                                
     id: 'computerScreen', 
     cameraPos: { x: 9, y: 1.3, z: -0.8 },
     lookAt: { x: 9, y: 1.3, z: -2.5 }
-  };
-
-  computerScreen.traverse((child) => {
-    if (child.isMesh) {
-      child.userData = computerScreen.userData; 
-      child.castShadow = true;
-      child.receiveShadow = true;
-
-      if (child.name.toLowerCase().includes('screen')) {
-         child.material = new THREE.MeshStandardMaterial({
-            color: 0x000000,        
-            roughness: 0.1,         
-            metalness: 0.5,         
-            emissive: 0x000000,     
+  },
+  (mesh) => {
+      if (mesh.name.toLowerCase().includes('screen')) {
+         
+         mesh.material = new THREE.MeshStandardMaterial({
+            color: 0x000000, 
+            roughness: 0.1, 
+            metalness: 0.5, 
+            emissive: 0x000000, 
             emissiveIntensity: 0
          });
 
@@ -405,16 +511,12 @@ loader.load('/models/monitor.glb', function (gltf) {
          cssObject.rotation.z = Math.PI;
 
          cssObject.scale.set(0.00038, 0.00031, 0.0003); 
+         cssObject.position.set(0.1975, 0.1715, -0.06); 
          
-         cssObject.position.set(0.195, 0.171, -0.06); 
-         
-         
-         child.add(cssObject);
+         mesh.add(cssObject);
       }
-    }
-  });
-  scene.add(computerScreen);
-});
+  }
+);
 
 loadAsset(
   '/models/computerKeyboard.glb',
@@ -582,11 +684,12 @@ window.addEventListener('click', (event) => {
 
       if (data.id === 'computerScreen') {
          zoom_sound.play();
-         zoomToScreen(data.cameraPos, data.lookAt);
+         zoomToScreen(data.cameraPos, data.lookAt, data.id);
       } 
       else if(data.id === 'phone'){
+
          zoom_sound.play();
-         zoomToScreen(data.cameraPos, data.lookAt);
+         zoomToScreen(data.cameraPos, data.lookAt, data.id);
       }
       
     }
@@ -594,16 +697,32 @@ window.addEventListener('click', (event) => {
 });
 
 const navProjects = document.getElementById('nav-projects');
+const navContact = document.getElementById('nav-contact');
 
 navProjects.addEventListener('click', (event) => {
   event.stopPropagation(); 
   
   if (isZoomedIn) return;
 
+  zoom_sound.play();
+
   const monitorPosition = { x: 9, y: 1.3, z: -0.8 };
   const monitorLookAt = { x: 9, y: 1.3, z: -2.5 };
   
-  zoomToScreen(monitorPosition, monitorLookAt);
+  zoomToScreen(monitorPosition, monitorLookAt, 'computerScreen');
+});
+
+navContact.addEventListener('click', (event) => {
+  event.stopPropagation();
+  
+  if (isZoomedIn) return;
+
+  zoom_sound.play();
+
+  const phonePosition = { x: 17, y: 0.5, z: -2.2 };
+  const phoneLookAt = { x: 17, y: -2.5, z: -3.5 };
+  
+  zoomToScreen(phonePosition, phoneLookAt, 'phone');
 });
 
 window.addEventListener('resize', () => {
@@ -614,32 +733,32 @@ window.addEventListener('resize', () => {
   cssRenderer.setSize(window.innerWidth, window.innerHeight);
 });
 
-document.getElementById('exit-btn').addEventListener('click', () => {
-  pcInterface.classList.remove('active');
-  zoom_sound_reverse.play();
+document.getElementById('nav-home').addEventListener('click', (event) => {
+    event.stopPropagation();
+    zoomOut();
+});
 
-  gsap.to(camera.position, {
-    x: initialCameraState.position.x,
-    y: initialCameraState.position.y,
-    z: initialCameraState.position.z,
-    duration: 1.5,
-    ease: "power2.out"
-  });
+window.openProject = function(url) {
+  document.getElementById('desktop-icons').style.display = 'none';
+  
+  document.getElementById('project-window').style.display = 'flex';
+  
+  document.getElementById('project-frame').src = url;
+};
 
-  gsap.to(controls.target, {
-    x: initialCameraState.target.x,
-    y: initialCameraState.target.y,
-    z: initialCameraState.target.z,
-    duration: 1.5,
-    ease: "power2.out",
-    onUpdate: () => {
-      camera.lookAt(controls.target);
-    },
-    onComplete: () => {
-      isZoomedIn = false;
-      controls.enabled = true; 
-    }
-  });
+window.closeProject = function() {
+  document.getElementById('project-frame').src = '';
+  
+  document.getElementById('project-window').style.display = 'none';
+  
+  document.getElementById('desktop-icons').style.display = 'flex'; 
+};
+
+document.querySelectorAll('.exit-btn').forEach(btn => {
+    btn.addEventListener('click', (event) => {
+        event.stopPropagation();
+        zoomOut();
+    });
 });
 
 animate();

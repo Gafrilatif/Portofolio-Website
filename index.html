@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gafrilatif's Website</title>
+    <style>
+    body {
+      margin: 0;
+      background-color: #000;
+      overflow: hidden; 
+    }
+
+    #loading-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: #000000;
+      z-index: 9999;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      font-family: monospace;
+    }
+
+    #loader-container { text-align: center; }
+    #loader-text { margin-bottom: 20px; font-size: 24px; }
+    #progress-bar-container {
+      width: 300px;
+      height: 4px;
+      background: #333;
+      border-radius: 2px;
+    }
+    #progress-bar {
+      width: 0%;
+      height: 100%;
+      background: #00ffcc;
+      transition: width 0.2s;
+    }
+  </style>
+  </head>
+  <body>
+    <div id="loading-screen">
+      <div id="loader-container">
+        <div id="loader-text">Loading World...</div>
+        <div id="progress-bar-container">
+          <div id="progress-bar"></div>
+        </div>
+      </div>
+    </div>
+
+    <nav class="glass-nav">
+      <div class="logo">Gafrilatif</div>
+      <ul>
+        <li id="nav-home">Home</li>
+        <li id="nav-projects">Projects</li>
+        <li id="nav-contact">Contact</li>
+      </ul>
+    </nav>
+
+    <div id="pc-interface" class="pc-interface">
+      <div class="desktop-screen">
+        <div class="desktop-header">My Portfolio OS</div>
+        
+        <div id="desktop-icons" class="desktop-icons">
+          <div class="folder" onclick="openProject('/public/Projects/jobking.html')">
+            📁 <br> Jobking
+          </div>
+          <div class="folder" onclick="openProject('/public/Projects/3d-portofolio.html')">
+            📁 <br> 3D Portofolio
+          </div>
+          <div class="folder" onclick="openProject('/public/Projects/employee-app.html')">
+            📁 <br> Employee <br> App
+          </div>
+          <div class="folder" onclick="openProject('/public/Projects/hotelingo.html')">
+            📁 <br> Hotelingo <br> Website
+          </div>
+          <div class="folder" onclick="openProject('/public/Projects/cinema-seats.html')">
+            📁 <br> Cinema seats <br> Booking App
+          </div>
+          <div class="folder" onclick="openProject('/public/Projects/car-rental.html')">
+            📁 <br> Car Rental <br> Application
+          </div>
+        </div>
+
+        <div id="project-window" class="project-window" style="display: none;">
+          <div class="window-header">
+            <button class="back-btn" onclick="closeProject()">⬅ Back to Desktop</button>
+          </div>
+          <iframe id="project-frame" src="" frameborder="0"></iframe>
+        </div>
+
+        <button id="pc-exit-btn" class="exit-btn">
+          <img src="/img/on-off-button.png" class="exit-img"></button>
+      </div>
+    </div>
+    
+  <div id="phone-interface" class="phone-interface">
+      <div class="phone-screen">
+        <div class="phone-header">Contacts</div>
+        
+        <div class="phone-icons">
+          <div class="contact" onclick="">
+            <b style="color: #00ffcc; font-size: 28px;">Gmail</b> <br> 
+            gafrilatif.aviandi@gmail.com
+          </div>
+          
+          <div class="contact" onclick="">
+            <b style="color: #00ffcc; font-size: 28px;">Phone</b> <br> 
+            +62 813 3162 4028
+          </div>
+
+          <div class="contact" onclick="window.open('https://www.linkedin.com/in/gafrilatif-aviandi-putra-adnanta-488b26268/', '_blank')">
+            <b style="color: #00ffcc; font-size: 28px;">LinkedIn</b> <br> 
+            Gafrilatif Aviandi Putra Adnanta
+          </div>
+        </div>
+        <button id="phone-exit-btn" class="exit-btn">
+          <img src="/img/on-off-button.png" class="exit-img"></button>
+      </div>
+    </div>
+
+    <canvas id="bg"> </canvas>
+
+    <main>
+  </main>
+
+    <script type="module" src="/src/main.js"></script>
+
+
+  </body>
+</html>
