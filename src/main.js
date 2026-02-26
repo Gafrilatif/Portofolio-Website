@@ -14,8 +14,8 @@ import { Howl } from 'howler';
 
 
 
-let zoom_sound = new Audio('/audio/zoom_sound.mp3');
-let zoom_sound_reverse = new Audio('/audio/zoom_sound_reverse.mp3');
+let zoom_sound = new Audio('./audio/zoom_sound.mp3');
+let zoom_sound_reverse = new Audio('./audio/zoom_sound_reverse.mp3');
 const scene = new THREE.Scene();
 scene.fog = new THREE.FogExp2(0x000000, 0.02);
 scene.background = new THREE.Color(0x000000);
@@ -85,9 +85,9 @@ const loader = new GLTFLoader(loadingManager);
 //---- Textures and Materials ----//
 
 const textureLoader = new THREE.TextureLoader(loadingManager);
-const floorColor = textureLoader.load('/textures/metal_color.jpg');
-const floorRoughness = textureLoader.load('/textures/metal_roughness.jpg');
-const floorNormal = textureLoader.load('/textures/metal_normal.png');
+const floorColor = textureLoader.load('./textures/metal_color.jpg');
+const floorRoughness = textureLoader.load('./textures/metal_roughness.jpg');
+const floorNormal = textureLoader.load('./textures/metal_normal.png');
 
 [floorColor, floorRoughness, floorNormal].forEach(tex => {
     tex.wrapS = THREE.RepeatWrapping;
@@ -103,9 +103,9 @@ const floorMaterial = new THREE.MeshStandardMaterial({
     metalness: 0.1                
 });
 
-const roomfloorColor = textureLoader.load('/textures/roomFloor_color.jpg');
-const roomfloorRoughness = textureLoader.load('/textures/roomFloor_roughness.jpg');
-const roomfloorNormal = textureLoader.load('/textures/roomFloor_normal.png');
+const roomfloorColor = textureLoader.load('./textures/roomFloor_color.jpg');
+const roomfloorRoughness = textureLoader.load('./textures/roomFloor_roughness.jpg');
+const roomfloorNormal = textureLoader.load('./textures/roomFloor_normal.png');
 
 [roomfloorColor, roomfloorRoughness, roomfloorNormal].forEach(tex => {
     tex.wrapS = THREE.RepeatWrapping;
@@ -121,9 +121,9 @@ const roomFloorMaterial = new THREE.MeshStandardMaterial({
     metalness: 0                
 });
 
-const outsidefloorColor = textureLoader.load('/textures/grass_BaseColor.jpg');
-const outsidefloorRoughness = textureLoader.load('/textures/grass_Roughness.jpg');
-const outsidefloorNormal = textureLoader.load('/textures/grass_Normal.png');
+const outsidefloorColor = textureLoader.load('./textures/grass_BaseColor.jpg');
+const outsidefloorRoughness = textureLoader.load('./textures/grass_Roughness.jpg');
+const outsidefloorNormal = textureLoader.load('./textures/grass_Normal.png');
 
 [outsidefloorColor, outsidefloorRoughness, outsidefloorNormal].forEach(tex => {
     tex.wrapS = THREE.RepeatWrapping;
@@ -139,9 +139,9 @@ const outsideFloorMaterial = new THREE.MeshStandardMaterial({
     metalness: 0                
 });
 
-const furnitureColor = textureLoader.load('/textures/wood_furniture_color.jpg');
-const furnitureRoughness = textureLoader.load('/textures/wood_furniture_Roughness.jpg');
-const furnitureNormal = textureLoader.load('/textures/wood_furniture_Normal.png');
+const furnitureColor = textureLoader.load('./textures/wood_furniture_color.jpg');
+const furnitureRoughness = textureLoader.load('./textures/wood_furniture_roughness.jpg');
+const furnitureNormal = textureLoader.load('./textures/wood_furniture_normal.jpg');
 
 [furnitureColor, furnitureRoughness, furnitureNormal].forEach(tex => {
     tex.wrapS = THREE.RepeatWrapping;
@@ -326,7 +326,7 @@ function animate() {
 //---- Load Models ----//
 
 loadAsset(
-  '/models/lightBulb.glb',
+  './models/lightBulb.glb',
   { x: 10, y: 10, z: 10 },
   { x: 10, y: 15, z: 5 },
   { x: Math.PI, y: 0, z: 0 },
@@ -357,7 +357,7 @@ loadAsset(
 );
 
 loadAsset(
-  '/models/bookcaseClosed.glb',
+  './models/bookcaseClosed.glb',
   { x: 10, y: 10, z: 10 },
   { x: 0.5, y: -4, z: -1.5 },
   null,
@@ -366,7 +366,7 @@ loadAsset(
 );
 
 loadAsset(
-  '/models/books.glb',
+  './models/books.glb',
   { x: 10, y: 10, z: 10 },
   { x: 1, y: 2.1, z: -2 },
   null,
@@ -374,7 +374,7 @@ loadAsset(
 );
 
 loadAsset(
-  '/models/plantSmall1.glb',
+  './models/plantSmall1.glb',
   { x: 10, y: 10, z: 10 },
   { x: 3, y: -0.3, z: -2.2 },
   null,
@@ -382,7 +382,7 @@ loadAsset(
 );
 
 loadAsset(
-  '/models/desk.glb',
+  './models/desk.glb',
   { x: 10, y: 10, z: 10 },
   { x: 5, y: -4, z: -0.5 },
   null,
@@ -391,7 +391,7 @@ loadAsset(
 );
 
 loadAsset(
-  '/models/speaker.glb',
+  './models/speaker.glb',
   { x: 10, y: 10, z: 10 },
   { x: 12.5, y: -3.5, z: -3 },
   null,
@@ -399,7 +399,7 @@ loadAsset(
 );
 
 loadAsset(
-  '/models/custom_gaming_pc.glb',
+  './models/custom_gaming_pc.glb',
   { x: 0.5, y: 0.5, z: 0.5 },
   { x: 9, y: -2.6, z: -2.2 },
   null,
@@ -407,7 +407,7 @@ loadAsset(
 );
 
 loadAsset(
-  '/models/speakerSmall.glb',
+  './models/speakerSmall.glb',
   { x: 10, y: 10, z: 10 },
   { x: 5.5, y: -0.2, z: -3 },
   null,
@@ -415,7 +415,7 @@ loadAsset(
 );
 
 loadAsset(
-  '/models/eevee.glb',
+  './models/eevee.glb',
   { x: 3, y: 3, z: 3 },
   { x: 1.7, y: -0.3, z: -2.5 },
   null,
@@ -423,7 +423,7 @@ loadAsset(
 );
 
 loadAsset(
-  '/models/chairDesk.glb',
+  './models/chairDesk.glb',
   { x: 10, y: 10, z: 10 },
   { x: 11.1, y: -4, z: 0 },
   { x: 0, y: Math.PI, z: 0 },
@@ -431,7 +431,7 @@ loadAsset(
 );
 
 loadAsset(
-  '/models/bedSingle.glb',
+  './models/bedSingle.glb',
   { x: 10, y: 10, z: 10 },
   { x: 15, y: -4, z: 7 },
   null,
@@ -439,7 +439,7 @@ loadAsset(
 );
 
 loadAsset(
-  '/models/tableCoffeeSquare.glb',
+  './models/tableCoffeeSquare.glb',
   { x: 10, y: 10, z: 10 },
   { x: 19.4, y: -4, z: -1.4 },
   null,
@@ -448,7 +448,7 @@ loadAsset(
 );
 
 loadAsset(
-  '/models/phone2.glb',
+  './models/phone2.glb',
   { x: 0.8, y: 0.8, z: 0.8 },
   { x: 17, y: -1.7, z: -2 },
   { x: 0, y: Math.PI, z: 0 },
@@ -475,7 +475,7 @@ loadAsset(
 );
 
 loadAsset(
-  '/models/rugRectangle.glb',
+  './models/rugRectangle.glb',
   { x: 10, y: 10, z: 10 },
   { x: 2, y: -4, z: 14 },
   null,
@@ -483,7 +483,7 @@ loadAsset(
 );
 
 loadAsset(
-  '/models/monitor.glb',
+  './models/monitor.glb',
   { x: 10, y: 10, z: 10 },         
   { x: 7.5, y: -0.25, z: -2.5 },   
   null,                            
@@ -519,7 +519,7 @@ loadAsset(
 );
 
 loadAsset(
-  '/models/computerKeyboard.glb',
+  './models/computerKeyboard.glb',
   { x: 10, y: 10, z: 10 },
   { x: 8, y: -0.25, z: -0.5 },
   null,
@@ -527,7 +527,7 @@ loadAsset(
 );
 
 loadAsset(
-  '/models/computerMouse.glb',
+  './models/computerMouse.glb',
   { x: 10, y: 10, z: 10 },
   { x: 11.5, y: -0.25, z: -0.7 },
   null,
@@ -535,7 +535,7 @@ loadAsset(
 );
 
 loadAsset(
-  '/models/wallCornerRond.glb',
+  './models/wallCornerRond.glb',
   { x: 10, y: 10, z: 10 },
   { x: 5, y: -4, z: -5 },
   { x: 0, y: Math.PI, z: 0 },
@@ -549,7 +549,7 @@ loadAsset(
 );
 
 loadAsset(
-  'models/wallCornerRond.glb',
+  './models/wallCornerRond.glb',
   { x: 10, y: 10, z: 10 },
   { x: 25.5, y: -4, z: 0.5 },
   { x: 0, y: Math.PI / 2, z: 0 },
@@ -563,7 +563,7 @@ loadAsset(
 );
 
 loadAsset(
-  '/models/wall.glb',
+  './models/wall.glb',
   { x: 10, y: 10, z: 10 },
   { x: 15, y: -4, z: -5 },
   { x: 0, y: Math.PI, z: 0 },
@@ -577,7 +577,7 @@ loadAsset(
 );
 
 loadAsset(
-  '/models/wall.glb',
+  './models/wall.glb',
   { x: 10, y: 10, z: 10 },
   { x: 20, y: -4, z: -5 },
   { x: 0, y: Math.PI, z: 0 },
@@ -591,7 +591,7 @@ loadAsset(
 );
 
 loadAsset(
-  '/models/wallWindow.glb',
+  './models/wallWindow.glb',
   { x: 10, y: 10, z: 10 },
   { x: -0.5, y: -4, z: 0.5 },
   { x: 0, y: Math.PI * 1.5, z: 0 },
@@ -605,7 +605,7 @@ loadAsset(
 );
 
 loadAsset(
-  '/models/wallHalf.glb',
+  './models/wallHalf.glb',
   { x: 10, y: 10, z: 10 },
   { x: -0.5, y: -4, z: 10.5 },
   { x: 0, y: Math.PI * 1.5, z: 0 },
@@ -618,7 +618,7 @@ loadAsset(
   }
 );
 
-loader.load('/models/streetLight.glb', function (gltf) {
+loader.load('./models/streetLight.glb', function (gltf) {
   const streetlight = gltf.scene;
   streetlight.scale.set(20, 20, 20); 
   streetlight.position.set(-5, -4, -4.5); 
