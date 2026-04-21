@@ -41,6 +41,10 @@ To run this project locally on your machine:
 
 4.  Open your browser and navigate to `http://localhost:5173` (or the port shown in your terminal).
 
+Or you can check out the website in this link:
+
+https://gafrilatif.github.io/Portofolio-Website/
+
 ## 📬 Contact
 Feel free to reach out if you have questions about the code or want to discuss a project!
 
