@@ -6,127 +6,483 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Gafrilatif's Website</title>
     <style>
-    body {
-      margin: 0;
-      background-color: #000;
-      overflow: hidden; 
-    }
+      body {
+        margin: 0;
+        background-color: #000;
+        overflow: hidden;
+      }
 
-    #loading-screen {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background-color: #000000;
-      z-index: 9999;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      color: white;
-      font-family: monospace;
-    }
+      #loading-screen {
+        position: fixed;
+        inset: 0;
+        background: radial-gradient(circle at center, #0a1b1d 0%, #050b0c 70%, #020506 100%);
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 24px;
+        box-sizing: border-box;
+        color: #e6f7f4;
+        font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+        opacity: 1;
+        transform: scale(1);
+        transition: opacity 0.7s ease, transform 0.7s ease;
+        overflow: hidden;
+      }
 
-    #loader-container { text-align: center; }
-    #loader-text { margin-bottom: 20px; font-size: 24px; }
-    #progress-bar-container {
-      width: 300px;
-      height: 4px;
-      background: #333;
-      border-radius: 2px;
-    }
-    #progress-bar {
-      width: 0%;
-      height: 100%;
-      background: #00ffcc;
-      transition: width 0.2s;
-    }
-  </style>
-    <script type="module" crossorigin src="./assets/index-D-OzZF5r.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-B7WEcpC1.css">
+      #loading-screen::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: repeating-linear-gradient(
+          to bottom,
+          rgba(0, 255, 204, 0.03) 0px,
+          rgba(0, 255, 204, 0.03) 1px,
+          transparent 1px,
+          transparent 3px
+        );
+        pointer-events: none;
+      }
+
+      .hud-corner {
+        position: absolute;
+        width: 26px;
+        height: 26px;
+        border-color: rgba(0, 255, 204, 0.55);
+        border-style: solid;
+        pointer-events: none;
+      }
+      .hud-corner.tl { top: 20px; left: 20px; border-width: 2px 0 0 2px; }
+      .hud-corner.tr { top: 20px; right: 20px; border-width: 2px 2px 0 0; }
+      .hud-corner.bl { bottom: 20px; left: 20px; border-width: 0 0 2px 2px; }
+      .hud-corner.br { bottom: 20px; right: 20px; border-width: 0 2px 2px 0; }
+
+      .loader-card {
+        position: relative;
+        width: min(560px, 92vw);
+        background: rgba(7, 18, 20, 0.86);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(0, 255, 204, 0.35);
+        border-radius: 14px;
+        padding: 24px 26px;
+        box-sizing: border-box;
+        box-shadow:
+          0 18px 48px rgba(0, 0, 0, 0.65),
+          0 0 28px rgba(0, 255, 204, 0.12);
+      }
+
+      .loader-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding-bottom: 14px;
+        margin-bottom: 16px;
+        border-bottom: 1px solid rgba(0, 255, 204, 0.2);
+      }
+
+      .loader-brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+      }
+
+      .loader-logo {
+        width: 26px;
+        height: 26px;
+        border-radius: 6px;
+        object-fit: cover;
+        box-shadow: 0 0 12px rgba(0, 255, 204, 0.45);
+        flex-shrink: 0;
+      }
+
+      .loader-title {
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 1.6px;
+        color: #d7f5ef;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      #loader-percent {
+        font-size: 16px;
+        font-weight: 700;
+        color: #00ffcc;
+        text-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
+        flex-shrink: 0;
+      }
+
+      .loader-log {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+        margin-bottom: 20px;
+        font-size: 13px;
+        line-height: 1.45;
+      }
+
+      .log-line {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #a8ccc5;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .log-tag-ok {
+        color: #00ffcc;
+        font-weight: 700;
+        flex-shrink: 0;
+      }
+
+      .log-tag-wait {
+        color: #ffbd59;
+        font-weight: 700;
+        flex-shrink: 0;
+      }
+
+      #progress-bar-container {
+        width: 100%;
+        height: 14px;
+        padding: 3px;
+        box-sizing: border-box;
+        background: rgba(0, 255, 204, 0.06);
+        border: 1px solid rgba(0, 255, 204, 0.28);
+        border-radius: 5px;
+        overflow: hidden;
+      }
+
+      #progress-bar {
+        width: 0%;
+        height: 100%;
+        background: repeating-linear-gradient(
+          90deg,
+          #00ffcc 0px,
+          #00ffcc 14px,
+          transparent 14px,
+          transparent 18px
+        );
+        filter: drop-shadow(0 0 6px rgba(0, 255, 204, 0.65));
+        transition: width 0.2s ease-out;
+      }
+
+      .loader-tip {
+        position: absolute;
+        bottom: 28px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: min(560px, 88vw);
+        text-align: center;
+        font-size: 12px;
+        color: rgba(168, 204, 197, 0.65);
+        letter-spacing: 0.6px;
+      }
+
+      @media (max-width: 640px) {
+        .loader-card { padding: 18px 18px; }
+        .loader-title { font-size: 11px; letter-spacing: 1px; }
+        .loader-log { font-size: 12px; }
+        .hud-corner { width: 18px; height: 18px; }
+      }
+    </style>
+    <script type="module" crossorigin src="./assets/index-C4UlWPta.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-uHEjzLQH.css">
   </head>
   <body>
     <div id="loading-screen">
-      <div id="loader-container">
-        <div id="loader-text">Loading World...</div>
+      <span class="hud-corner tl" aria-hidden="true"></span>
+      <span class="hud-corner tr" aria-hidden="true"></span>
+      <span class="hud-corner bl" aria-hidden="true"></span>
+      <span class="hud-corner br" aria-hidden="true"></span>
+
+      <div class="loader-card">
+        <div class="loader-header">
+          <div class="loader-brand">
+            <img src="./gafrilatif_logo.png" alt="" class="loader-logo" />
+            <span class="loader-title">GAFRILATIF // WORLD ENGINE v2.0</span>
+          </div>
+          <span id="loader-percent">0%</span>
+        </div>
+
+        <div class="loader-log">
+          <div class="log-line"><span class="log-tag-ok">[OK]</span><span>renderer.webgl + bloom</span></div>
+          <div class="log-line"><span class="log-tag-ok">[OK]</span><span>lighting.room_shadows</span></div>
+          <div class="log-line">
+            <span id="loader-asset-tag" class="log-tag-wait">[..]</span>
+            <span id="loader-current-asset">loading 3D scene assets...</span>
+          </div>
+        </div>
+
         <div id="progress-bar-container">
           <div id="progress-bar"></div>
         </div>
       </div>
+
+      <div class="loader-tip">TIP: Drag to orbit &bull; Scroll to zoom &bull; Click the monitor or desk phone to interact</div>
     </div>
 
-    <nav class="glass-nav">
-      <div class="logo">Gafrilatif</div>
-      <ul>
-        <li id="nav-home">Home</li>
-        <li id="nav-projects">Projects</li>
-        <li id="nav-contact">Contact</li>
-      </ul>
+    <!-- Desktop & Mobile Brand Pill + Navigation -->
+    <nav class="floating-nav" aria-label="Primary Navigation">
+      <button type="button" class="nav-brand" data-nav="home" aria-label="Go Home">
+        <img src="./gafrilatif_logo.png" alt="" class="nav-logo-img" />
+        <span class="nav-brand-text">GAFRILATIF</span>
+      </button>
+
+      <span class="nav-divider" aria-hidden="true"></span>
+
+      <div class="nav-links">
+        <button type="button" class="nav-pill active" id="nav-home" data-nav="home">
+          <svg class="nav-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <path d="M3 9.5L10 3.5L17 9.5V16.5C17 17.05 16.55 17.5 16 17.5H12.5V12.5H7.5V17.5H4C3.45 17.5 3 17.05 3 16.5V9.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+          </svg>
+          <span>Home</span>
+        </button>
+
+        <button type="button" class="nav-pill" id="nav-projects" data-nav="projects">
+          <svg class="nav-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <rect x="2.5" y="3.5" width="15" height="10.5" rx="1.5" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M7 17H13M10 14V17" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+          <span>Projects</span>
+        </button>
+
+        <button type="button" class="nav-pill" id="nav-contact" data-nav="contact">
+          <svg class="nav-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <rect x="5.5" y="2.5" width="9" height="15" rx="2" stroke="currentColor" stroke-width="1.6"/>
+            <circle cx="10" cy="14.5" r="0.9" fill="currentColor"/>
+          </svg>
+          <span>Contact</span>
+        </button>
+      </div>
+    </nav>
+
+    <!-- Mobile Bottom Glassmorphic Dock -->
+    <nav class="mobile-dock" aria-label="Mobile Navigation">
+      <button type="button" class="dock-pill active" data-nav="home">
+        <svg class="nav-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <path d="M3 9.5L10 3.5L17 9.5V16.5C17 17.05 16.55 17.5 16 17.5H12.5V12.5H7.5V17.5H4C3.45 17.5 3 17.05 3 16.5V9.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+        </svg>
+        <span>Home</span>
+      </button>
+
+      <button type="button" class="dock-pill" data-nav="projects">
+        <svg class="nav-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <rect x="2.5" y="3.5" width="15" height="10.5" rx="1.5" stroke="currentColor" stroke-width="1.6"/>
+          <path d="M7 17H13M10 14V17" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+        <span>Projects</span>
+      </button>
+
+      <button type="button" class="dock-pill" data-nav="contact">
+        <svg class="nav-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <rect x="5.5" y="2.5" width="9" height="15" rx="2" stroke="currentColor" stroke-width="1.6"/>
+          <circle cx="10" cy="14.5" r="0.9" fill="currentColor"/>
+        </svg>
+        <span>Contact</span>
+      </button>
     </nav>
 
     <div id="pc-interface" class="pc-interface">
       <div class="desktop-screen">
-        <div class="desktop-header">My Portfolio OS</div>
-        
-        <div id="desktop-icons" class="desktop-icons">
-          <div class="folder" onclick="openProject('./Projects/jobking.html')">
-            📁 <br> Jobking
+        <!-- CRT glass reflection & vignette overlay -->
+        <div class="screen-glass-fx" aria-hidden="true"></div>
+
+        <!-- Custom Gafrilatif OS Boot Sequence -->
+        <div id="pc-boot-screen" class="pc-boot-screen">
+          <img src="./gafrilatif_logo.png" alt="Gafrilatif OS" class="boot-logo" />
+          <div class="boot-title">GAFRILATIF OS</div>
+          <div class="boot-bar-track">
+            <div id="boot-bar-fill" class="boot-bar-fill"></div>
           </div>
-          <div class="folder" onclick="openProject('./Projects/web_portofolio.html')">
-            📁 <br> 3D Portofolio
+          <div id="boot-status" class="boot-status">Initializing system...</div>
+        </div>
+
+        <!-- Concept 2: Retro-Modern Terminal OS Top Status Bar -->
+        <header id="os-topbar" class="os-topbar">
+          <div class="os-topbar-left">
+            <img src="./gafrilatif_logo.png" alt="" class="os-mini-logo" />
+            <span class="os-brand">GAFRILATIF OS <span class="os-ver">v2.0</span></span>
           </div>
-          <div class="folder" onclick="openProject('./Projects/employee_app.html')">
-            📁 <br> Employee Onboarding <br> App
+          <div class="os-topbar-right">
+            <span class="os-sys-pill"><span class="os-dot"></span>SYS OK</span>
+            <span id="os-clock" class="os-clock">20:00</span>
+            <button id="pc-exit-btn" class="exit-btn os-power-btn" aria-label="Power Off PC" title="Power Off">
+              <img src="./img/on-off-button.png" alt="Power Off" class="exit-img" />
+            </button>
           </div>
-          <div class="folder" onclick="openProject('./Projects/hotelingo.html')">
-            📁 <br> Hotelingo <br> Website
+        </header>
+
+        <!-- Main Terminal OS Workspace -->
+        <div id="os-workspace" class="os-workspace">
+          <div id="desktop-icons" class="desktop-icons">
+            <button type="button" class="folder" onclick="openProject('./Projects/jobking.html', 'jobking.proj')">
+              <svg class="folder-svg" viewBox="0 0 48 40" fill="none" aria-hidden="true">
+                <path d="M3 8C3 5.79 4.79 4 7 4H17.5L21.5 9H41C43.21 9 45 10.79 45 13V33C45 35.21 43.21 37 41 37H7C4.79 37 3 35.21 3 33V8Z" stroke="currentColor" stroke-width="2.4" fill="rgba(0,255,204,0.1)"/>
+              </svg>
+              <span>Jobking</span>
+            </button>
+
+            <button type="button" class="folder" onclick="openProject('./Projects/web_portofolio.html', '3d_portfolio.proj')">
+              <svg class="folder-svg" viewBox="0 0 48 40" fill="none" aria-hidden="true">
+                <path d="M3 8C3 5.79 4.79 4 7 4H17.5L21.5 9H41C43.21 9 45 10.79 45 13V33C45 35.21 43.21 37 41 37H7C4.79 37 3 35.21 3 33V8Z" stroke="currentColor" stroke-width="2.4" fill="rgba(0,255,204,0.1)"/>
+              </svg>
+              <span>3D Portfolio</span>
+            </button>
+
+            <button type="button" class="folder" onclick="openProject('./Projects/employee_app.html', 'employee_onboarding.proj')">
+              <svg class="folder-svg" viewBox="0 0 48 40" fill="none" aria-hidden="true">
+                <path d="M3 8C3 5.79 4.79 4 7 4H17.5L21.5 9H41C43.21 9 45 10.79 45 13V33C45 35.21 43.21 37 41 37H7C4.79 37 3 35.21 3 33V8Z" stroke="currentColor" stroke-width="2.4" fill="rgba(0,255,204,0.1)"/>
+              </svg>
+              <span>Employee App</span>
+            </button>
+
+            <button type="button" class="folder" onclick="openProject('./Projects/hotelingo.html', 'hotelingo.proj')">
+              <svg class="folder-svg" viewBox="0 0 48 40" fill="none" aria-hidden="true">
+                <path d="M3 8C3 5.79 4.79 4 7 4H17.5L21.5 9H41C43.21 9 45 10.79 45 13V33C45 35.21 43.21 37 41 37H7C4.79 37 3 35.21 3 33V8Z" stroke="currentColor" stroke-width="2.4" fill="rgba(0,255,204,0.1)"/>
+              </svg>
+              <span>Hotelingo</span>
+            </button>
+
+            <button type="button" class="folder" onclick="openProject('./Projects/cinema_seats.html', 'cinema_seats.proj')">
+              <svg class="folder-svg" viewBox="0 0 48 40" fill="none" aria-hidden="true">
+                <path d="M3 8C3 5.79 4.79 4 7 4H17.5L21.5 9H41C43.21 9 45 10.79 45 13V33C45 35.21 43.21 37 41 37H7C4.79 37 3 35.21 3 33V8Z" stroke="currentColor" stroke-width="2.4" fill="rgba(0,255,204,0.1)"/>
+              </svg>
+              <span>Cinema Seats</span>
+            </button>
+
+            <button type="button" class="folder" onclick="openProject('./Projects/car_rental.html', 'car_rental.proj')">
+              <svg class="folder-svg" viewBox="0 0 48 40" fill="none" aria-hidden="true">
+                <path d="M3 8C3 5.79 4.79 4 7 4H17.5L21.5 9H41C43.21 9 45 10.79 45 13V33C45 35.21 43.21 37 41 37H7C4.79 37 3 35.21 3 33V8Z" stroke="currentColor" stroke-width="2.4" fill="rgba(0,255,204,0.1)"/>
+              </svg>
+              <span>Car Rental</span>
+            </button>
           </div>
-          <div class="folder" onclick="openProject('./Projects/cinema_seats.html')">
-            📁 <br> Cinema seats <br> Booking App
-          </div>
-          <div class="folder" onclick="openProject('./Projects/car_rental.html')">
-            📁 <br> Car Rental <br> Application
-          </div>
+
+          <aside class="os-terminal" aria-label="About Terminal">
+            <div class="terminal-bar">
+              <div class="terminal-dots">
+                <span class="t-dot t-red"></span>
+                <span class="t-dot t-amber"></span>
+                <span class="t-dot t-green"></span>
+              </div>
+              <span class="terminal-title">about.sh — bash</span>
+            </div>
+            <div class="terminal-body">
+              <div class="t-line"><span class="t-prompt">$</span> whoami</div>
+              <div class="t-out">Gafrilatif A.P.A.</div>
+
+              <div class="t-line"><span class="t-prompt">$</span> role</div>
+              <div class="t-out">Full-Stack &amp; 3D Web Developer</div>
+
+              <div class="t-line"><span class="t-prompt">$</span> education</div>
+              <div class="t-out">BICT Graduate — Asia e University</div>
+
+              <div class="t-line"><span class="t-prompt">$</span> status</div>
+              <div class="t-out t-status"><span class="t-live-dot"></span>Open for Opportunities</div>
+
+              <div class="t-line t-hint-line"><span class="t-prompt">$</span> ls ./projects <span class="t-cursor"></span></div>
+              <div class="t-muted">// Click any folder on the left to inspect</div>
+            </div>
+          </aside>
         </div>
 
         <div id="project-window" class="project-window" style="display: none;">
           <div class="window-header">
-            <button class="back-btn" onclick="closeProject()">X</button>
+            <span id="project-title" class="window-title">project.html</span>
+            <button class="back-btn" onclick="closeProject()">✕ Close</button>
           </div>
           <iframe id="project-frame" src="" frameborder="0"></iframe>
         </div>
-
-        <button id="pc-exit-btn" class="exit-btn">
-          <img src="./img/on-off-button.png" class="exit-img"></button>
       </div>
     </div>
-    
-  <div id="phone-interface" class="phone-interface">
+
+    <div id="phone-interface" class="phone-interface">
       <div class="phone-screen">
-        <div class="phone-header">Contacts</div>
-        
-        <div class="phone-icons">
-          <div class="contact" onclick="">
-            <b style="color: #00ffcc; font-size: 28px;">Gmail</b> <br> 
-            gafrilatif.aviandi@gmail.com
-          </div>
+        <div class="screen-glass-fx" aria-hidden="true"></div>
 
-          <div class="contact" onclick="window.open('https://www.linkedin.com/in/gafrilatif-aviandi-putra-adnanta-488b26268/', '_blank')">
-            <b style="color: #00ffcc; font-size: 28px;">LinkedIn</b> <br> 
-            Gafrilatif Aviandi Putra Adnanta
+        <!-- Phone Connecting Sequence -->
+        <div id="phone-boot-screen" class="phone-boot-screen">
+          <div class="connect-rings" aria-hidden="true">
+            <span class="connect-ring r1"></span>
+            <span class="connect-ring r2"></span>
+            <svg class="connect-icon" width="44" height="44" viewBox="0 0 24 24" fill="none">
+              <path d="M5 4H9L11 9L8.5 10.5C9.57 12.67 11.33 14.43 13.5 15.5L15 13L20 15V19C20 20.1 19.1 21 18 21C9.93 20.51 3.49 14.07 3 6C3 4.9 3.9 4 5 4Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
           </div>
+          <div class="connect-title">CONNECTING...</div>
+          <div class="boot-bar-track connect-bar-track">
+            <div id="phone-connect-fill" class="boot-bar-fill"></div>
+          </div>
+          <div id="phone-connect-status" class="connect-status">Acquiring signal...</div>
         </div>
-        <button id="phone-exit-btn" class="exit-btn">
-          <img src="./img/on-off-button.png" class="exit-img"></button>
+
+        <header id="phone-topbar" class="phone-topbar">
+          <div class="phone-topbar-left">
+            <svg class="signal-bars" width="18" height="14" viewBox="0 0 18 14" fill="none" aria-hidden="true">
+              <rect x="0" y="9" width="3" height="5" rx="0.8" fill="currentColor" />
+              <rect x="5" y="6" width="3" height="8" rx="0.8" fill="currentColor" />
+              <rect x="10" y="3" width="3" height="11" rx="0.8" fill="currentColor" />
+              <rect x="15" y="0" width="3" height="14" rx="0.8" fill="currentColor" />
+            </svg>
+            <span class="phone-comms-title">COMMS // LINE 01</span>
+          </div>
+          <div class="phone-topbar-right">
+            <span id="phone-clock" class="phone-clock">21:45</span>
+            <button id="phone-exit-btn" class="exit-btn phone-power-btn" aria-label="Exit Phone View" title="Exit">
+              <img src="./img/on-off-button.png" alt="Exit" class="exit-img" />
+            </button>
+          </div>
+        </header>
+
+        <div id="phone-icons" class="phone-icons">
+          <button type="button" class="contact" id="contact-gmail">
+            <div class="contact-head">
+              <span class="contact-label"><span class="contact-idx">01</span> GMAIL</span>
+              <span class="contact-action copy-pill" id="gmail-copy-pill">[COPY]</span>
+            </div>
+            <div class="contact-value">gafrilatif.aviandi@gmail.com</div>
+          </button>
+
+          <button
+            type="button"
+            class="contact"
+            onclick="window.open('https://www.linkedin.com/in/gafrilatif-aviandi-putra-adnanta-488b26268/', '_blank')"
+          >
+            <div class="contact-head">
+              <span class="contact-label"><span class="contact-idx">02</span> LINKEDIN</span>
+              <span class="contact-action">[OPEN ↗]</span>
+            </div>
+            <div class="contact-value">Gafrilatif Aviandi Putra Adnanta</div>
+          </button>
+
+          <button
+            type="button"
+            class="contact"
+            onclick="window.open('https://github.com/Gafrilatif', '_blank')"
+          >
+            <div class="contact-head">
+              <span class="contact-label"><span class="contact-idx">03</span> GITHUB</span>
+              <span class="contact-action">[OPEN ↗]</span>
+            </div>
+            <div class="contact-value">github.com/Gafrilatif</div>
+          </button>
+        </div>
+
+        <footer id="phone-footer" class="phone-footer">
+          <span class="os-dot"></span>
+          <span>STATUS: AVAILABLE FOR OPPORTUNITIES</span>
+        </footer>
       </div>
     </div>
 
-    <canvas id="bg"> </canvas>
-
-    <main>
-  </main>
-
-
+    <canvas id="bg"></canvas>
 
   </body>
 </html>
