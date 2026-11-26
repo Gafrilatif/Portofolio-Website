@@ -1,71 +1,332 @@
 /* Global Styles */
-.glass-nav {
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:root {
+  --accent: #00ffcc;
+  --accent-soft: rgba(0, 255, 204, 0.16);
+  --accent-border: rgba(0, 255, 204, 0.35);
+  --glass-bg: rgba(10, 18, 28, 0.72);
+  --text-main: #f4f7fa;
+  --text-muted: #b3c0cc;
+}
+
+canvas#bg {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
-  padding: 20px 40px;
+  height: 100%;
+  touch-action: none;
+  z-index: 1;
+}
+
+/* Redesigned Floating Pill Navbar (Desktop) */
+.floating-nav {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 10px 8px 16px;
+  max-width: calc(100vw - 24px);
+
+  background: var(--glass-bg);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--accent-border);
+  border-radius: 999px;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.45),
+    0 0 18px rgba(0, 255, 204, 0.14);
+}
+
+.nav-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: transparent;
+  border: none;
+  padding: 4px 2px;
+  cursor: pointer;
+  color: var(--text-main);
+  font-family: system-ui, -apple-system, 'Segoe UI', monospace, sans-serif;
+}
+
+.nav-logo-img {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  object-fit: cover;
+  box-shadow: 0 0 10px rgba(0, 255, 204, 0.35);
+}
+
+.nav-brand-text {
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 2.2px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.nav-divider {
+  width: 1px;
+  height: 22px;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.nav-links {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.nav-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.22s ease;
+  white-space: nowrap;
+}
+
+.nav-pill:hover {
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.nav-pill.active {
+  color: #061318;
+  background: var(--accent);
+  border-color: var(--accent);
+  box-shadow: 0 0 16px rgba(0, 255, 204, 0.45);
+}
+
+.nav-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+/* Mobile Bottom Dock (hidden on desktop) */
+.mobile-dock {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .floating-nav {
+    top: 14px;
+    padding: 7px 16px;
+    gap: 0;
+  }
+
+  .nav-divider,
+  .nav-links {
+    display: none;
+  }
+
+  .nav-brand-text {
+    font-size: 0.85rem;
+    letter-spacing: 2px;
+  }
+
+  .mobile-dock {
+    position: fixed;
+    bottom: max(16px, env(safe-area-inset-bottom));
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    padding: 6px;
+    width: min(340px, calc(100vw - 24px));
+
+    background: var(--glass-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--accent-border);
+    border-radius: 999px;
+    box-shadow:
+      0 10px 32px rgba(0, 0, 0, 0.55),
+      0 0 18px rgba(0, 255, 204, 0.14);
+  }
+
+  .dock-pill {
+    flex: 1;
+    min-height: 44px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    padding: 6px 8px;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--text-muted);
+    font-family: 'SFMono-Regular', Consolas, monospace;
+    font-size: 0.72rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.22s ease;
+  }
+
+  .dock-pill.active {
+    color: #061318;
+    background: var(--accent);
+    box-shadow: 0 0 14px rgba(0, 255, 204, 0.4);
+  }
+}
+
+/* 3D Floating Object Pointer Hints (CSS2D) */
+/* NOTE: Never animate transform on .scene-hint itself; CSS2DRenderer controls its transform! */
+.scene-hint {
+  pointer-events: auto;
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: var(--accent);
+  transition: opacity 0.3s ease;
+}
+
+.scene-hint-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  animation: hintFloat 2.2s ease-in-out infinite;
+}
+
+.scene-hint:hover .scene-hint-pill {
+  background: var(--accent);
+  color: #061318;
+  box-shadow: 0 0 20px rgba(0, 255, 204, 0.65);
+}
+
+.scene-hint-pill {
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: rgba(10, 18, 28, 0.88);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  font-family: 'SFMono-Regular', Consolas, monospace;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45), 0 0 12px rgba(0, 255, 204, 0.28);
+  transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.scene-hint-arrow {
   display: flex;
   align-items: center;
-  z-index: 100; 
-  
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  justify-content: center;
+  filter: drop-shadow(0 0 6px rgba(0, 255, 204, 0.7));
 }
 
-.logo {
-  font-weight: bold;
-  font-size: 1.5rem;
-  color: white;
-  text-transform: uppercase;
-  letter-spacing: 2px;
+.scene-hint.temporarily-hidden {
+  opacity: 0;
+  pointer-events: none;
 }
 
-.glass-nav ul {
-  display: flex;
-  list-style: none;
-  gap: 30px;
+.scene-hint.dismissed {
+  opacity: 0;
+  pointer-events: none;
 }
 
-.glass-nav li {
-  color: #cccccc;
-  cursor: pointer;
-  font-family: monospace; 
-  transition: color 0.3s ease;
+.scene-hint.dismissed .scene-hint-inner {
+  animation: none;
 }
 
-.glass-nav li:hover {
-  color: #00ff00; 
-  text-shadow: 0 0 10px #00ff00; 
+@keyframes hintFloat {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-7px);
+  }
 }
 
-canvas{
-  position: fixed;
-  top: 0;
-  left: 0;
-  /* width: 100%;
-  height: 100%;
-  z-index: -1; */
+/* Floating Musical Notes Above Active Lofi Radio (CSS2D) */
+.radio-notes {
+  pointer-events: none;
+  position: relative;
+  width: 60px;
+  height: 60px;
 }
 
-main {
-  width: 100%;
-  color: white;
-  z-index: 10;
+.radio-note {
   position: absolute;
+  bottom: 0;
+  left: 50%;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--accent);
+  text-shadow: 0 0 10px rgba(0, 255, 204, 0.85), 0 0 18px rgba(0, 255, 204, 0.45);
+  opacity: 0;
 }
 
-section {
-  display: grid;
-  place-items: center;
-  align-content: center;
-  height: 100vh; 
-  pointer-events: none; 
+.radio-notes.playing .radio-note {
+  animation: noteFloat 2.4s ease-out infinite;
 }
 
-section * {
-  pointer-events: auto; 
+.radio-notes.playing .radio-note.n1 {
+  left: 22%;
+  animation-delay: 0s;
+}
+
+.radio-notes.playing .radio-note.n2 {
+  left: 56%;
+  color: #ffbd59;
+  text-shadow: 0 0 10px rgba(255, 189, 89, 0.85);
+  animation-delay: 0.8s;
+}
+
+.radio-notes.playing .radio-note.n3 {
+  left: 78%;
+  font-size: 18px;
+  animation-delay: 1.6s;
+}
+
+@keyframes noteFloat {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 6px) scale(0.75) rotate(-8deg);
+  }
+  20% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -44px) scale(1.15) rotate(12deg);
+  }
 }
 
 /* PC Interface Styles */
@@ -77,199 +338,848 @@ section * {
   box-shadow: none;
   font-family: monospace;
   color: white;
-  
-  opacity: 0;              
-  pointer-events: none;    
-  transition: opacity 1s ease; 
-  
+
+  opacity: 0;
+  pointer-events: none !important;
+  user-select: none;
+  transition: opacity 0.8s ease;
+
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
 }
 
+.pc-interface:not(.active) * {
+  pointer-events: none !important;
+}
+
 .pc-interface.active {
   opacity: 1;
-  pointer-events: auto;
+  pointer-events: auto !important;
+  user-select: auto;
 }
 
 .desktop-screen {
-  width: 990px; 
+  position: relative;
+  width: 990px;
   height: 775px;
-  background: rgba(10, 20, 40, 0.85); 
-  backdrop-filter: blur(10px); 
-  box-shadow: 0 0 30px rgba(0, 255, 204, 0.3);
-  padding: 20px;
-  color: white;
-  font-family: monospace;
+  background: radial-gradient(circle at 22% 18%, #0f2528 0%, #081214 55%, #04090b 100%);
+  box-shadow:
+    inset 0 0 48px rgba(0, 0, 0, 0.85),
+    inset 0 0 14px rgba(0, 255, 204, 0.14);
+  padding: 0;
+  color: #e6f7f4;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
-.desktop-header {
-  font-size: 24px;
-  font-weight: bold;
-  margin-bottom: 20px;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.5); 
+/* Subtle CRT scanlines + diagonal glass sheen so UI feels embedded inside the monitor */
+.screen-glass-fx {
+  position: absolute;
+  inset: 0;
+  z-index: 15;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      125deg,
+      rgba(255, 255, 255, 0.05) 0%,
+      rgba(255, 255, 255, 0.015) 28%,
+      transparent 48%
+    ),
+    repeating-linear-gradient(
+      to bottom,
+      rgba(0, 255, 204, 0.025) 0px,
+      rgba(0, 255, 204, 0.025) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+  box-shadow: inset 0 0 42px rgba(0, 0, 0, 0.72);
+}
+
+/* Concept 2: Retro-Modern Terminal OS Top Status Bar */
+.os-topbar {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  background: rgba(6, 16, 18, 0.92);
+  border-bottom: 1px solid rgba(0, 255, 204, 0.28);
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.45);
+}
+
+.os-topbar-left,
+.os-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.os-mini-logo {
+  width: 24px;
+  height: 24px;
+  border-radius: 5px;
+  object-fit: cover;
+  box-shadow: 0 0 10px rgba(0, 255, 204, 0.4);
+}
+
+.os-brand {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--accent);
+  text-shadow: 0 0 10px rgba(0, 255, 204, 0.4);
+}
+
+.os-ver {
+  font-size: 12px;
+  color: #7ea8a0;
+  letter-spacing: 1px;
+}
+
+.os-sys-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(0, 255, 204, 0.08);
+  border: 1px solid rgba(0, 255, 204, 0.25);
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.os-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+}
+
+.os-clock {
+  font-size: 15px;
+  font-weight: 700;
+  color: #d9f2ee;
+  letter-spacing: 1px;
+}
+
+.os-power-btn {
+  position: static;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border-radius: 8px;
+  background: rgba(255, 68, 68, 0.2);
+  border: 1px solid rgba(255, 85, 85, 0.6);
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.os-power-btn:hover {
+  background: rgba(255, 68, 68, 0.55);
+  box-shadow: 0 0 12px rgba(255, 68, 68, 0.6);
+}
+
+/* Main Terminal OS Workspace */
+.os-workspace {
+  position: relative;
+  z-index: 10;
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1.05fr 1fr;
+  gap: 28px;
+  padding: 28px;
+  align-items: start;
 }
 
 .desktop-icons {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
   width: 100%;
-  
-  gap: 10px;           
-  margin-top: 40px;    
+  margin-top: 0;
 }
 
 .folder {
-  width: 80px;        
-  display: flex;       
+  width: 100%;
+  display: flex;
   flex-direction: column;
-  align-items: center; 
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
   text-align: center;
-  
-  padding: 10px;
-  border-radius: 8px;
+  padding: 18px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 255, 204, 0.22);
+  background: rgba(8, 22, 24, 0.68);
   cursor: pointer;
   transition: all 0.2s ease;
-  
-  color: white;
-  font-family: monospace;
-  font-size: 16px;     
-  font-weight: bold;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.5); 
+  color: #e6f7f4;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
 }
 
-.folder::first-line {
-  font-size: 42px; 
-  line-height: 50px;
+.folder-svg {
+  width: 44px;
+  height: 36px;
+  color: var(--accent);
+  filter: drop-shadow(0 0 8px rgba(0, 255, 204, 0.35));
+  transition: transform 0.2s ease, filter 0.2s ease;
 }
 
 .folder:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(0, 255, 204, 0.14);
+  border-color: var(--accent);
+  box-shadow: 0 0 18px rgba(0, 255, 204, 0.22);
+  transform: translateY(-2px);
 }
 
-.exit-btn {
+.folder:hover .folder-svg {
+  transform: scale(1.06);
+  filter: drop-shadow(0 0 12px rgba(0, 255, 204, 0.65));
+}
+
+/* Right-side about.sh Terminal Widget */
+.os-terminal {
+  background: rgba(4, 11, 13, 0.9);
+  border: 1px solid rgba(0, 255, 204, 0.32);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45), 0 0 18px rgba(0, 255, 204, 0.08);
+}
+
+.terminal-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: rgba(0, 255, 204, 0.08);
+  border-bottom: 1px solid rgba(0, 255, 204, 0.2);
+}
+
+.terminal-dots {
+  display: flex;
+  gap: 7px;
+}
+
+.t-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.t-red { background: #ff5f56; }
+.t-amber { background: #ffbd2e; }
+.t-green { background: #27c93f; }
+
+.terminal-title {
+  font-size: 13px;
+  color: #8ab8b0;
+  letter-spacing: 0.5px;
+}
+
+.terminal-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.t-line {
+  color: var(--accent);
+  font-weight: 700;
+  margin-top: 8px;
+}
+
+.t-line:first-child {
+  margin-top: 0;
+}
+
+.t-prompt {
+  color: #ffbd59;
+  margin-right: 6px;
+}
+
+.t-out {
+  color: #e6f7f4;
+  padding-left: 16px;
+}
+
+.t-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.t-live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 10px var(--accent);
+}
+
+.t-hint-line {
+  margin-top: 16px;
+}
+
+.t-cursor {
+  display: inline-block;
+  width: 9px;
+  height: 16px;
+  background: var(--accent);
+  vertical-align: middle;
+  margin-left: 4px;
+  animation: blinkCursor 1s steps(1) infinite;
+}
+
+.t-muted {
+  color: #6c948d;
+  font-size: 13px;
+  padding-left: 16px;
+  margin-top: 2px;
+}
+
+@keyframes blinkCursor {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+/* Custom Gafrilatif OS Boot Sequence */
+.pc-boot-screen {
   position: absolute;
-  top: 20px;
-  right: 20px;
-  background: red;
-  color: white;
-  border: none;
-  border-radius: 15px;
-  padding: 5px 10px;
-  cursor: pointer;
+  inset: 0;
+  z-index: 20;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  background: radial-gradient(circle at center, #0c1b2a 0%, #04080e 100%);
+  opacity: 1;
+  transition: opacity 0.45s ease;
 }
 
-.exit-img {
-  width: 15px;
-  height: 20px;
+.pc-boot-screen::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.02) 0px,
+    rgba(255, 255, 255, 0.02) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  pointer-events: none;
+}
+
+.pc-boot-screen.fade-out {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.boot-logo {
+  width: 110px;
+  height: 110px;
+  border-radius: 22px;
+  object-fit: cover;
+  filter: drop-shadow(0 0 24px rgba(0, 255, 204, 0.55));
+  animation: bootPulse 1.6s ease-in-out infinite;
+}
+
+.boot-title {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 6px;
+  color: var(--text-main);
+  text-shadow: 0 0 14px rgba(0, 255, 204, 0.45);
+}
+
+.boot-bar-track {
+  width: min(320px, 70%);
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+  border: 1px solid rgba(0, 255, 204, 0.25);
+}
+
+.boot-bar-fill {
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(90deg, #00c4a7, var(--accent));
+  box-shadow: 0 0 12px var(--accent);
+}
+
+.boot-status {
+  font-size: 15px;
+  color: var(--accent);
+  letter-spacing: 1px;
+  min-height: 22px;
+}
+
+@keyframes bootPulse {
+  0%,
+  100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 18px rgba(0, 255, 204, 0.45));
+  }
+  50% {
+    transform: scale(1.04);
+    filter: drop-shadow(0 0 30px rgba(0, 255, 204, 0.8));
+  }
 }
 
 /* Projects Interface Styles */
 .project-window {
+  position: relative;
+  z-index: 10;
+  flex: 1;
   width: 100%;
-  height: 80%; 
   display: flex;
   flex-direction: column;
-  background: #ffffff; 
-  border-radius: 8px;
+  background: #1e1e24;
   overflow: hidden;
-  margin-top: 20px;
 }
 
 .window-header {
-  background: #222;
-  padding: 10px;
+  background: #0a1719;
+  padding: 10px 18px;
   display: flex;
   align-items: center;
-  border-bottom: 2px solid #444;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(0, 255, 204, 0.25);
+}
+
+.window-title {
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
 }
 
 .back-btn {
-  background: #ff4444;
-  color: white;
-  border: none;
-  padding: 8px 15px;
+  background: rgba(255, 68, 68, 0.2);
+  color: #ff8888;
+  border: 1px solid rgba(255, 85, 85, 0.55);
+  padding: 6px 14px;
   cursor: pointer;
-  border-radius: 4px;
-  font-family: monospace;
+  border-radius: 6px;
+  font-family: inherit;
   font-weight: bold;
-  font-size: 16px;
+  font-size: 13px;
   transition: 0.2s;
 }
 
 .back-btn:hover {
-  background: #ff6666;
+  background: rgba(255, 68, 68, 0.55);
+  color: white;
 }
 
 #project-frame {
   width: 100%;
-  flex-grow: 1; 
+  flex-grow: 1;
   border: none;
-  background: white;
+  background: #1e1e24;
 }
 
-
-/* Phone Interface Styles */
+/* Phone Interface Styles — Concept 1: Retro-Modern Terminal Comms LCD */
+/* NOTE: Keep overflow visible on .phone-interface (CSS3DObject root) so Chrome matrix3d hit-testing works! */
 .phone-interface {
-  width: 550px;   
-  height: 540px;  
-  background: #1a1a1a;
-  border: 4px solid #333;
-  border-radius: 20px;
-  color: white;
-  font-family: monospace;
-  
+  position: relative;
+  width: 550px;
+  height: 540px;
+  background: transparent;
+  border: none;
+  color: #e6f7f4;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+
   display: flex;
   flex-direction: column;
-  justify-content: flex-start; 
-  align-items: flex-start;     
-  
-  padding: 40px;           
-  box-sizing: border-box;  
-  
+  padding: 0;
+
   opacity: 0;
-  pointer-events: none; 
+  pointer-events: none !important;
+  user-select: none;
+  transition: opacity 0.8s ease;
+}
+
+.phone-interface:not(.active) * {
+  pointer-events: none !important;
 }
 
 .phone-interface.active {
   opacity: 1;
-  pointer-events: auto;
+  pointer-events: auto !important;
+  user-select: auto;
 }
 
-/* --- TEXT SIZE & SPACING --- */
-.phone-header {
-  font-size: 32px;      
-  font-weight: bold;
-  margin-bottom: 40px;  
+.phone-screen {
+  position: relative;
+  z-index: 10;
   width: 100%;
-  border-bottom: 2px solid #333;
-  padding-bottom: 15px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: radial-gradient(circle at 30% 20%, #0f2528 0%, #071416 60%, #040a0c 100%);
+  border: none;
+  border-radius: 24px;
+  box-shadow: inset 0 0 46px rgba(0, 0, 0, 0.92);
+  overflow: hidden;
+}
+
+/* Phone Connecting Sequence */
+.phone-boot-screen {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  background: radial-gradient(circle at center, #0c1f22 0%, #04090b 100%);
+  opacity: 1;
+  transition: opacity 0.45s ease;
+}
+
+.phone-boot-screen.fade-out {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.connect-rings {
+  position: relative;
+  width: 112px;
+  height: 112px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.connect-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(0, 255, 204, 0.55);
+  animation: connectPulse 1.8s ease-out infinite;
+}
+
+.connect-ring.r2 {
+  animation-delay: 0.9s;
+}
+
+.connect-icon {
+  color: var(--accent);
+  filter: drop-shadow(0 0 14px rgba(0, 255, 204, 0.7));
+}
+
+.connect-title {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  color: #e6f7f4;
+  text-shadow: 0 0 12px rgba(0, 255, 204, 0.45);
+}
+
+.connect-bar-track {
+  width: min(300px, 72%);
+}
+
+.connect-status {
+  font-size: 16px;
+  color: var(--accent);
+  letter-spacing: 1px;
+  min-height: 22px;
+}
+
+@keyframes connectPulse {
+  0% {
+    transform: scale(0.55);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(1.25);
+    opacity: 0;
+  }
+}
+
+.phone-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: rgba(5, 14, 16, 0.92);
+  border-bottom: 1px solid rgba(0, 255, 204, 0.28);
+}
+
+.phone-topbar-left,
+.phone-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.signal-bars {
+  width: 22px;
+  height: 18px;
+  color: var(--accent);
+  filter: drop-shadow(0 0 6px rgba(0, 255, 204, 0.55));
+}
+
+.phone-comms-title {
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: var(--accent);
+  text-shadow: 0 0 10px rgba(0, 255, 204, 0.4);
+}
+
+.phone-clock {
+  font-size: 20px;
+  font-weight: 700;
+  color: #d9f2ee;
+  letter-spacing: 1px;
+}
+
+.phone-power-btn {
+  position: static;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 9px;
+  background: rgba(255, 68, 68, 0.24);
+  border: 1px solid rgba(255, 85, 85, 0.65);
+  cursor: pointer;
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.phone-power-btn:hover {
+  background: rgba(255, 68, 68, 0.58);
+  box-shadow: 0 0 12px rgba(255, 68, 68, 0.65);
 }
 
 .phone-icons {
+  flex: 1;
   display: flex;
-  flex-direction: column; 
-  gap: 10px;              
+  flex-direction: column;
+  justify-content: space-evenly;
+  gap: 14px;
+  padding: 18px 20px;
   width: 100%;
 }
 
 .contact {
-  text-align: left;       
-  font-size: 24px;        
-  line-height: 1.5;       
+  width: 100%;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 18px 20px;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 255, 204, 0.32);
+  background: rgba(8, 22, 24, 0.78);
+  color: #e6f7f4;
+  font-family: inherit;
   cursor: pointer;
-  padding: 10px;
-  border-radius: 8px;
-  transition: background 0.2s;
-  
-  word-wrap: break-word;      
-  overflow-wrap: break-word;  
-  word-break: break-all;      
-  max-width: 100%;            
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .contact:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(0, 255, 204, 0.16);
+  border-color: var(--accent);
+  box-shadow: 0 0 18px rgba(0, 255, 204, 0.25);
+}
+
+.contact-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+}
+
+.contact-label {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: var(--accent);
+  text-shadow: 0 0 8px rgba(0, 255, 204, 0.35);
+}
+
+.contact-idx {
+  color: #ffbd59;
+  margin-right: 4px;
+}
+
+.contact-action {
+  font-size: 16px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 7px;
+  background: rgba(0, 255, 204, 0.12);
+  border: 1px solid rgba(0, 255, 204, 0.4);
+  color: var(--accent);
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.contact-action.copied {
+  background: var(--accent);
+  color: #051214;
+  border-color: var(--accent);
+  box-shadow: 0 0 12px rgba(0, 255, 204, 0.6);
+}
+
+.contact-value {
+  font-size: 21px;
+  color: #e2f5f1;
+  word-break: break-word;
+}
+
+.phone-footer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 20px;
+  background: rgba(5, 14, 16, 0.92);
+  border-top: 1px solid rgba(0, 255, 204, 0.22);
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  color: #96c4bc;
+}
+
+.exit-img {
+  width: 15px;
+  height: 18px;
+  display: block;
+}
+
+/* Mobile-Only Responsive Overlays (<= 640px) */
+@media (max-width: 640px) {
+  .pc-interface.mobile-overlay {
+    position: fixed;
+    top: 64px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 92vw;
+    height: calc(100dvh - 156px);
+    z-index: 50;
+  }
+
+  .pc-interface.mobile-overlay .desktop-screen {
+    width: 100%;
+    height: 100%;
+    border-radius: 16px;
+    border: 1px solid var(--accent-border);
+  }
+
+  .pc-interface.mobile-overlay .os-topbar {
+    padding: 10px 12px;
+  }
+
+  .pc-interface.mobile-overlay .os-brand {
+    font-size: 13px;
+    letter-spacing: 1px;
+  }
+
+  .pc-interface.mobile-overlay .os-sys-pill {
+    display: none;
+  }
+
+  .pc-interface.mobile-overlay .os-workspace {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    padding: 14px;
+    overflow-y: auto;
+  }
+
+  .pc-interface.mobile-overlay .folder {
+    padding: 12px 8px;
+    font-size: 12px;
+  }
+
+  .pc-interface.mobile-overlay .folder-svg {
+    width: 32px;
+    height: 26px;
+  }
+
+  .pc-interface.mobile-overlay .terminal-body {
+    padding: 12px;
+    font-size: 12px;
+  }
+
+  .pc-interface.mobile-overlay .boot-logo {
+    width: 78px;
+    height: 78px;
+  }
+
+  .pc-interface.mobile-overlay .boot-title {
+    font-size: 20px;
+    letter-spacing: 4px;
+  }
+
+  .phone-interface.mobile-overlay {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 92vw;
+    max-width: 390px;
+    height: auto;
+    max-height: calc(100dvh - 160px);
+    padding: 0;
+    border-color: var(--accent-border);
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.65), 0 0 24px rgba(0, 255, 204, 0.2);
+    z-index: 50;
+  }
+
+  .phone-interface.mobile-overlay .phone-topbar {
+    padding: 12px 14px;
+  }
+
+  .phone-interface.mobile-overlay .phone-comms-title {
+    font-size: 13px;
+    letter-spacing: 1px;
+  }
+
+  .phone-interface.mobile-overlay .phone-icons {
+    padding: 14px;
+    gap: 10px;
+    overflow-y: auto;
+  }
+
+  .phone-interface.mobile-overlay .contact {
+    padding: 12px 14px;
+  }
+
+  .phone-interface.mobile-overlay .contact-label {
+    font-size: 15px;
+  }
+
+  .phone-interface.mobile-overlay .contact-value {
+    font-size: 14px;
+  }
+
+  .phone-interface.mobile-overlay .phone-footer {
+    font-size: 11px;
+    padding: 10px 14px;
+  }
 }

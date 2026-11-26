@@ -4,108 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hotelingo</title>
-    <style>
-        /* --- Color Palette & Base Styles --- */
-        :root {
-            --primary: #00ffcc; 
-            --bg: #1e1e24;      
-            --card-bg: #2b2b36; 
-            --text: #f0f0f0;    
-            --text-muted: #a0a0a0;
-        }
-
-        body {
-            font-family: system-ui, -apple-system, sans-serif; 
-            background-color: var(--bg);
-            color: var(--text);
-            margin: 0;
-            padding: 30px;
-            line-height: 1.6;
-        }
-
-        .container {
-            max-width: 800px;
-            margin: 0 auto; 
-        }
-
-        /* --- Header Section --- */
-        .header {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-
-        h1 {
-            font-size: 3em;
-            margin-bottom: 5px;
-            color: var(--primary);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-
-        .subtitle {
-            font-size: 1.1em;
-            color: var(--text-muted);
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        /* --- Content Cards --- */
-        .section {
-            background: var(--card-bg);
-            padding: 25px 30px;
-            border-radius: 12px;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-        }
-
-        h2 {
-            margin-top: 0;
-            border-bottom: 2px solid var(--primary);
-            padding-bottom: 10px;
-            display: inline-block;
-            font-size: 1.5em;
-        }
-
-        /* --- Custom Bullet Points --- */
-        ul {
-            list-style-type: none; 
-            padding: 0;
-        }
-
-        li {
-            margin-bottom: 12px;
-            padding-left: 25px;
-            position: relative;
-        }
-
-        li::before {
-            content: '▹';
-            position: absolute;
-            left: 0;
-            color: var(--primary);
-            font-size: 1.2em;
-            line-height: 1;
-        }
-
-        /* --- Tech Stack Badges --- */
-        .tech-stack {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .tech-badge {
-            background: rgba(0, 255, 204, 0.1);
-            color: var(--primary);
-            border: 1px solid var(--primary);
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 0.9em;
-            font-weight: bold;
-            letter-spacing: 0.5px;
-        }
-    </style>
+    <link rel="stylesheet" href="./project-styles.css">
 </head>
 <body>
     <div class="container">
@@ -118,7 +17,7 @@
             <h2>Key Features</h2>
             <ul>
                 <li>Create accounts and bookings.</li>
-                <li>Read available room options and view their booking history./li>
+                <li>Read available room options and view their booking history.</li>
                 <li>Update reservation dates or room preferences.</li>
                 <li>Delete reservations when plans change.</li>
             </ul>

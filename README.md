@@ -25,7 +25,7 @@ To run this project locally on your machine:
 
 1.  **Clone the repository**
     ```bash
-    git clone [https://github.com/Gafrilatif/Portofolio-Website.git](https://github.com/Gafrilatif/Portofolio-Website.git)
+    git clone https://github.com/Gafrilatif/Portofolio-Website.git
     cd Portofolio-Website
     ```
 
