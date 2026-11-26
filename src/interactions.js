@@ -22,11 +22,11 @@ const HOME_DESKTOP = {
 };
 
 const HOME_MOBILE = {
-  lookAt: new THREE.Vector3(10, -1, 3),
+  lookAt: new THREE.Vector3(10, 1, 3),
   viewDir: new THREE.Vector3(10, 16, 27).normalize(),
-  fitWidth: 28,
-  fitHeight: 22,
-  minDistance: 36,
+  fitWidth: 36,
+  fitHeight: 28,
+  minDistance: 48,
 };
 
 function isMobileViewport() {
@@ -191,6 +191,10 @@ export function setupInteractions(ctx, hints, cssScreens = {}, radioController =
     );
   }
 
+  function isMobileOverlayActive() {
+    return Boolean(activeTargetId && !isTransitioning && isMobileViewport());
+  }
+
   function syncScreenPresentation(targetId, show) {
     const config = CAMERA_TARGETS[targetId];
     if (!config) return;
@@ -199,18 +203,22 @@ export function setupInteractions(ctx, hints, cssScreens = {}, radioController =
     if (!el) return;
 
     if (show && isMobileViewport()) {
-      if (cssObj) cssObj.visible = false;
       if (el.parentNode !== document.body) {
         document.body.appendChild(el);
       }
+      el.style.display = '';
+      el.style.position = '';
       el.style.transform = '';
       el.classList.add('mobile-overlay', 'active');
     } else if (show) {
       el.classList.remove('mobile-overlay');
+      el.style.display = '';
       if (cssObj) cssObj.visible = true;
       el.classList.add('active');
     } else {
       el.classList.remove('active', 'mobile-overlay');
+      el.style.display = '';
+      el.style.position = '';
       if (cssObj) cssObj.visible = true;
     }
   }
@@ -468,5 +476,6 @@ export function setupInteractions(ctx, hints, cssScreens = {}, radioController =
   return {
     zoomToTarget,
     zoomOut,
+    isMobileOverlayActive,
   };
 }
