@@ -17,8 +17,8 @@
       }
 
       /* Keep 3D screen DOM nodes out of normal document flow on first paint so mobile browsers never inflate viewport width to 1024px */
-      #pc-interface,
-      #phone-interface {
+      .pc-interface:not(.active),
+      .phone-interface:not(.active) {
         position: fixed;
         top: 0;
         left: 0;
