@@ -1071,3 +1071,152 @@ canvas#bg {
   height: 18px;
   display: block;
 }
+
+/* Pokémon Easter Egg — Tutorial Hint, Catch Stars, Pokédex Pill & Toast */
+.poke-pill {
+  padding: 4px 10px;
+  border-color: #ffbd59;
+  color: #ffbd59;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5), 0 0 12px rgba(255, 189, 89, 0.4);
+}
+
+.poke-tutorial-hint:hover .poke-pill {
+  background: #ffbd59;
+  color: #161005;
+  box-shadow: 0 0 18px rgba(255, 189, 89, 0.75);
+}
+
+.poke-stars {
+  pointer-events: none;
+  position: relative;
+  width: 70px;
+  height: 70px;
+}
+
+.poke-star {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  font-size: 20px;
+  color: #ffbd59;
+  text-shadow: 0 0 12px rgba(255, 189, 89, 0.9);
+  opacity: 0;
+  animation: starBurst 0.95s ease-out forwards;
+}
+
+.poke-star.s1 { --dx: -34px; --dy: -38px; }
+.poke-star.s2 { --dx: 34px; --dy: -34px; color: var(--accent); text-shadow: 0 0 12px var(--accent); animation-delay: 0.05s; }
+.poke-star.s3 { --dx: -24px; --dy: -56px; color: var(--accent); animation-delay: 0.1s; }
+.poke-star.s4 { --dx: 22px; --dy: -54px; animation-delay: 0.12s; }
+
+@keyframes starBurst {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.4);
+  }
+  25% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.25) rotate(25deg);
+  }
+}
+
+.pokedex-counter {
+  position: fixed;
+  bottom: 22px;
+  left: 22px;
+  z-index: 95;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--accent-border);
+  color: #e6f7f4;
+  font-family: 'SFMono-Regular', Consolas, monospace;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  opacity: 0;
+  transform: translateY(12px);
+  pointer-events: none;
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+.pokedex-counter.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.pokedex-counter.complete {
+  border-color: #ffbd59;
+  color: #ffbd59;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45), 0 0 18px rgba(255, 189, 89, 0.35);
+}
+
+.pokeball-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: linear-gradient(to bottom, #e52521 0%, #e52521 44%, #15181c 44%, #15181c 56%, #f4f6f8 56%, #f4f6f8 100%);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  flex-shrink: 0;
+}
+
+.catch-toast {
+  position: fixed;
+  bottom: 26px;
+  left: 50%;
+  transform: translate(-50%, 16px);
+  z-index: 120;
+  max-width: min(560px, 90vw);
+  padding: 12px 20px;
+  border-radius: 12px;
+  background: rgba(6, 18, 20, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  font-family: 'SFMono-Regular', Consolas, monospace;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-align: center;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55), 0 0 18px rgba(0, 255, 204, 0.25);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.catch-toast.visible {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.catch-toast.master {
+  border-color: #ffbd59;
+  color: #ffbd59;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6), 0 0 24px rgba(255, 189, 89, 0.45);
+}
+
+@media (max-width: 640px) {
+  .pokedex-counter {
+    bottom: auto;
+    top: 16px;
+    left: 14px;
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+
+  .catch-toast {
+    bottom: 86px;
+    font-size: 12px;
+    padding: 10px 14px;
+  }
+}

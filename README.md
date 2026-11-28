@@ -52,8 +52,10 @@ Feel free to reach out if you have questions about the code or want to discuss a
 
 ## 👋 Model Credits
 
-Eevee Figure:
-"Eevee" (https://skfb.ly/oEvtO) by DrewsDigitalDesigns is licensed under Creative Commons Attribution (http://creativecommons.org/licenses/by/4.0/).
+Pokémon Models (Creative Commons Attribution — http://creativecommons.org/licenses/by/4.0/):
+* **Eevee, Flareon, Jolteon, Umbreon, Vulpix & Arcanine:** by [DrewsDigitalDesigns](https://sketchfab.com/DrewsDigitalDesigns) (Eevee: https://skfb.ly/oEvtO)
+* **Mew:** by [nguyenlouis32](https://sketchfab.com/nguyenlouis32)
+* **Bulbasaur:** by [ny3ko0212](https://sketchfab.com/ny3ko0212)
 
 PC Model:
 "Custom Gaming PC" (https://skfb.ly/otsTr) by Yolala3D | Y3D is licensed under Creative Commons Attribution (http://creativecommons.org/licenses/by/4.0/).

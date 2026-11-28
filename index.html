@@ -494,6 +494,14 @@
       </div>
     </div>
 
+    <!-- Hidden until first Pokémon is caught -->
+    <div id="pokedex-counter" class="pokedex-counter" aria-live="polite">
+      <span class="pokeball-dot" aria-hidden="true"></span>
+      <span id="pokedex-count">0 / 8</span>
+    </div>
+
+    <div id="catch-toast" class="catch-toast" role="status" aria-live="polite"></div>
+
     <canvas id="bg"></canvas>
 
     <script type="module" src="./src/main.js"></script>

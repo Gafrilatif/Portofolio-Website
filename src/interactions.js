@@ -87,7 +87,13 @@ function getTargetCameraState(targetId, camera) {
   };
 }
 
-export function setupInteractions(ctx, hints, cssScreens = {}, radioController = null) {
+export function setupInteractions(
+  ctx,
+  hints,
+  cssScreens = {},
+  radioController = null,
+  pokemonSystem = null
+) {
   const { scene, camera, renderer, controls, resizeRenderers } = ctx;
 
   const zoomSound = new Audio('./audio/zoom_sound.mp3');
@@ -95,7 +101,7 @@ export function setupInteractions(ctx, hints, cssScreens = {}, radioController =
 
   const raycaster = new THREE.Raycaster();
   const pointer = new THREE.Vector2();
-  const allowedInteractions = new Set(['computerScreen', 'phone', 'radio']);
+  const allowedInteractions = new Set(['computerScreen', 'phone', 'radio', 'pokemon']);
 
   let activeTargetId = null;
   let isTransitioning = false;
@@ -295,6 +301,7 @@ export function setupInteractions(ctx, hints, cssScreens = {}, radioController =
     controls.enabled = false;
     renderer.domElement.style.cursor = 'default';
     hints.setHintsTemporarilyHidden(true);
+    pokemonSystem?.setHintsTemporarilyHidden(true);
     setActiveNav(config.navId);
     syncChairVisibility();
     playSound(zoomSound);
@@ -374,6 +381,7 @@ export function setupInteractions(ctx, hints, cssScreens = {}, radioController =
         isTransitioning = false;
         controls.enabled = true;
         hints.setHintsTemporarilyHidden(false);
+        pokemonSystem?.setHintsTemporarilyHidden(false);
       },
     });
   }
@@ -387,7 +395,7 @@ export function setupInteractions(ctx, hints, cssScreens = {}, radioController =
     for (const hit of intersects) {
       const id = hit.object?.userData?.id;
       if (id && allowedInteractions.has(id)) {
-        return id;
+        return hit.object.userData;
       }
     }
     return null;
@@ -404,12 +412,16 @@ export function setupInteractions(ctx, hints, cssScreens = {}, radioController =
     const dy = event.clientY - pointerDownPos.y;
     if (Math.hypot(dx, dy) > 6) return;
 
-    const hitId = hitTestInteractive(event.clientX, event.clientY);
-    if (hitId === 'radio') {
+    const hitData = hitTestInteractive(event.clientX, event.clientY);
+    if (!hitData) return;
+
+    if (hitData.id === 'radio') {
       hints.dismissHint('radio');
       radioController?.toggle();
-    } else if (hitId) {
-      zoomToTarget(hitId);
+    } else if (hitData.id === 'pokemon') {
+      pokemonSystem?.catchPokemon(hitData.pokemonKey);
+    } else {
+      zoomToTarget(hitData.id);
     }
   });
 
@@ -421,8 +433,8 @@ export function setupInteractions(ctx, hints, cssScreens = {}, radioController =
     if (now - hoverThrottle < 50) return;
     hoverThrottle = now;
 
-    const hitId = hitTestInteractive(event.clientX, event.clientY);
-    renderer.domElement.style.cursor = hitId ? 'pointer' : 'grab';
+    const hitData = hitTestInteractive(event.clientX, event.clientY);
+    renderer.domElement.style.cursor = hitData ? 'pointer' : 'grab';
   });
 
   // Nav buttons (desktop pill + mobile dock)

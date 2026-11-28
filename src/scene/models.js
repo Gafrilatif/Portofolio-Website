@@ -116,12 +116,6 @@ export function loadModels(gltfLoader, scene, materials, radioController = null)
       userData: { id: 'speakerSmall' },
     },
     {
-      path: './models/eevee.glb',
-      scale: { x: 3, y: 3, z: 3 },
-      position: { x: 1.7, y: -0.3, z: -2.5 },
-      userData: { id: 'eevee' },
-    },
-    {
       path: './models/chairDesk.glb',
       scale: { x: 10, y: 10, z: 10 },
       position: { x: 11.1, y: -4, z: 0 },

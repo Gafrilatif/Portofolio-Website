@@ -4,6 +4,7 @@ import { createMaterials } from './scene/materials.js';
 import { buildEnvironment } from './scene/environment.js';
 import { createGrassField } from './scene/grass.js';
 import { createRadioController } from './scene/radio.js';
+import { createPokemonSystem } from './scene/pokemon.js';
 import { loadModels } from './scene/models.js';
 import { createObjectHints } from './scene/hints.js';
 import { setupInteractions } from './interactions.js';
@@ -15,6 +16,7 @@ buildEnvironment(ctx.scene, materials);
 const grassField = createGrassField(ctx.scene);
 const radioController = createRadioController(ctx.scene, { x: 2.1, y: -0.55, z: 5.8 });
 const cssScreens = loadModels(ctx.gltfLoader, ctx.scene, materials, radioController);
+const pokemonSystem = createPokemonSystem(ctx.gltfLoader, ctx.scene, ctx.camera);
 
 let interactions = null;
 const hints = createObjectHints(ctx.scene, (targetId) => {
@@ -26,7 +28,7 @@ const hints = createObjectHints(ctx.scene, (targetId) => {
   }
 });
 
-interactions = setupInteractions(ctx, hints, cssScreens, radioController);
+interactions = setupInteractions(ctx, hints, cssScreens, radioController, pokemonSystem);
 
 function animate(timeMs) {
   requestAnimationFrame(animate);
@@ -36,6 +38,7 @@ function animate(timeMs) {
   }
   grassField.update(elapsedSeconds);
   radioController.update(elapsedSeconds);
+  pokemonSystem.update(elapsedSeconds);
   ctx.updateAudioListener();
   ctx.composer.render(ctx.scene, ctx.camera);
   ctx.cssRenderer.render(ctx.scene, ctx.camera);
