@@ -59,7 +59,7 @@ function getHomeCameraState(camera) {
   };
 }
 
-function getTargetCameraState(targetId, camera, cssScreens) {
+function getTargetCameraState(targetId, camera) {
   const config = CAMERA_TARGETS[targetId];
   const aspect = window.innerWidth / window.innerHeight;
 
@@ -71,13 +71,10 @@ function getTargetCameraState(targetId, camera, cssScreens) {
     };
   }
 
-  // Portrait mobile: aim dead-center at the actual 3D CSS3D screen & compute exact horizontal-fit distance
+  // Portrait mobile: pull back along the EXACT desktop viewing ray from config.lookAt
+  // so 3D parallax keeps the CSS3D screens locked flush inside the physical monitor & phone bezels
   const lookAt = config.lookAt.clone();
-  const cssObj = cssScreens[targetId];
-  if (cssObj) {
-    cssObj.updateWorldMatrix(true, false);
-    cssObj.getWorldPosition(lookAt);
-  }
+  const rayDir = config.cameraPos.clone().sub(lookAt).normalize();
 
   const vFovRad = THREE.MathUtils.degToRad(camera.fov);
   const tanHalfV = Math.tan(vFovRad / 2);
@@ -85,7 +82,7 @@ function getTargetCameraState(targetId, camera, cssScreens) {
   const distance = distH * config.portraitPadding;
 
   return {
-    cameraPos: lookAt.clone().addScaledVector(config.portraitViewDir, distance),
+    cameraPos: lookAt.clone().addScaledVector(rayDir, distance),
     lookAt,
   };
 }
@@ -302,7 +299,7 @@ export function setupInteractions(ctx, hints, cssScreens = {}, radioController =
     syncChairVisibility();
     playSound(zoomSound);
 
-    const { cameraPos, lookAt } = getTargetCameraState(targetId, camera, cssScreens);
+    const { cameraPos, lookAt } = getTargetCameraState(targetId, camera);
 
     gsap.killTweensOf(camera.position);
     gsap.killTweensOf(controls.target);
@@ -484,7 +481,7 @@ export function setupInteractions(ctx, hints, cssScreens = {}, radioController =
     resizeRenderers();
     syncChairVisibility();
     if (activeTargetId && !isTransitioning) {
-      const { cameraPos, lookAt } = getTargetCameraState(activeTargetId, camera, cssScreens);
+      const { cameraPos, lookAt } = getTargetCameraState(activeTargetId, camera);
       camera.position.copy(cameraPos);
       controls.target.copy(lookAt);
       camera.lookAt(controls.target);

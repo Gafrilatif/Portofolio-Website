@@ -53,7 +53,7 @@ export function createSceneContext() {
   composer.addPass(bloomPass);
 
   const cssRenderer = new CSS3DRenderer();
-  cssRenderer.setSize(window.innerWidth, window.innerHeight);
+  cssRenderer.setSize(initWidth, initHeight);
   cssRenderer.domElement.style.position = 'fixed';
   cssRenderer.domElement.style.top = '0';
   cssRenderer.domElement.style.left = '0';
@@ -62,7 +62,7 @@ export function createSceneContext() {
   document.body.appendChild(cssRenderer.domElement);
 
   const css2DRenderer = new CSS2DRenderer();
-  css2DRenderer.setSize(window.innerWidth, window.innerHeight);
+  css2DRenderer.setSize(initWidth, initHeight);
   css2DRenderer.domElement.style.position = 'fixed';
   css2DRenderer.domElement.style.top = '0';
   css2DRenderer.domElement.style.left = '0';
