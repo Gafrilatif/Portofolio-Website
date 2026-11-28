@@ -206,8 +206,8 @@
         .hud-corner { width: 18px; height: 18px; }
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-QZAb8nU8.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-DWWD9zMU.css">
+    <script type="module" crossorigin src="./assets/index-dI5--KWS.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-BWeVsJ1G.css">
   </head>
   <body>
     <div id="loading-screen">
@@ -495,6 +495,14 @@
         </footer>
       </div>
     </div>
+
+    <!-- Hidden until first Pokémon is caught -->
+    <div id="pokedex-counter" class="pokedex-counter" aria-live="polite">
+      <span class="pokeball-dot" aria-hidden="true"></span>
+      <span id="pokedex-count">0 / 8</span>
+    </div>
+
+    <div id="catch-toast" class="catch-toast" role="status" aria-live="polite"></div>
 
     <canvas id="bg"></canvas>
 
