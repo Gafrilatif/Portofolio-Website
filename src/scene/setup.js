@@ -13,7 +13,8 @@ const cameraForward = new THREE.Vector3();
 
 export function createSceneContext() {
   const scene = new THREE.Scene();
-  scene.fog = new THREE.FogExp2(0x000000, 0.02);
+  const isPortraitInit = window.innerWidth < window.innerHeight;
+  scene.fog = new THREE.FogExp2(0x000000, isPortraitInit ? 0.009 : 0.02);
   scene.background = new THREE.Color(0x000000);
 
   const camera = new THREE.PerspectiveCamera(
@@ -122,6 +123,8 @@ export function createSceneContext() {
     const height = window.innerHeight;
     camera.aspect = width / height;
     camera.updateProjectionMatrix();
+
+    scene.fog.density = width < height ? 0.009 : 0.02;
 
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(width, height);

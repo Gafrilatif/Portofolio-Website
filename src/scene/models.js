@@ -37,6 +37,7 @@ export function loadModels(gltfLoader, scene, materials, radioController = null)
   const cssScreens = {
     computerScreen: null,
     phone: null,
+    chair: null,
   };
 
   const assets = [
@@ -126,6 +127,9 @@ export function loadModels(gltfLoader, scene, materials, radioController = null)
       position: { x: 11.1, y: -4, z: 0 },
       rotation: { x: 0, y: Math.PI, z: 0 },
       userData: { id: 'chair' },
+      onLoaded: (model) => {
+        cssScreens.chair = model;
+      },
     },
     {
       path: './models/bedSingle.glb',

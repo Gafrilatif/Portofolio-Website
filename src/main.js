@@ -38,9 +38,7 @@ function animate(timeMs) {
   radioController.update(elapsedSeconds);
   ctx.updateAudioListener();
   ctx.composer.render(ctx.scene, ctx.camera);
-  if (!interactions?.isMobileOverlayActive()) {
-    ctx.cssRenderer.render(ctx.scene, ctx.camera);
-  }
+  ctx.cssRenderer.render(ctx.scene, ctx.camera);
   ctx.css2DRenderer.render(ctx.scene, ctx.camera);
 }
 

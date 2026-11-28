@@ -5,12 +5,18 @@ const CAMERA_TARGETS = {
   computerScreen: {
     cameraPos: new THREE.Vector3(9, 1.3, -0.8),
     lookAt: new THREE.Vector3(9, 1.3, -2.5),
+    portraitViewDir: new THREE.Vector3(0, 0, 1).normalize(),
+    portraitFitWidth: 3.95,
+    portraitPadding: 1.08,
     interfaceId: 'pc-interface',
     navId: 'projects',
   },
   phone: {
     cameraPos: new THREE.Vector3(17.1, -0.1, -2.5),
     lookAt: new THREE.Vector3(17.1, -2.5, -3.5),
+    portraitViewDir: new THREE.Vector3(0, 2.4, 1.0).normalize(),
+    portraitFitWidth: 2.85,
+    portraitPadding: 1.12,
     interfaceId: 'phone-interface',
     navId: 'contact',
   },
@@ -22,15 +28,15 @@ const HOME_DESKTOP = {
 };
 
 const HOME_MOBILE = {
-  lookAt: new THREE.Vector3(10, 1, 3),
-  viewDir: new THREE.Vector3(10, 16, 27).normalize(),
-  fitWidth: 36,
-  fitHeight: 28,
-  minDistance: 48,
+  lookAt: new THREE.Vector3(11.5, -1, 4),
+  viewDir: new THREE.Vector3(12, 17, 29).normalize(),
+  fitWidth: 32,
+  fitHeight: 26,
+  minDistance: 46,
 };
 
-function isMobileViewport() {
-  return window.innerWidth <= 640;
+function isPortraitViewport() {
+  return window.innerWidth < window.innerHeight;
 }
 
 function getHomeCameraState(camera) {
@@ -40,7 +46,7 @@ function getHomeCameraState(camera) {
     const tanHalfV = Math.tan(vFovRad / 2);
     const distV = (HOME_MOBILE.fitHeight / 2) / tanHalfV;
     const distH = (HOME_MOBILE.fitWidth / 2) / (tanHalfV * aspect);
-    const distance = Math.max(HOME_MOBILE.minDistance, Math.max(distV, distH) * 1.15);
+    const distance = Math.max(HOME_MOBILE.minDistance, Math.max(distV, distH) * 1.12);
 
     return {
       position: HOME_MOBILE.lookAt.clone().addScaledVector(HOME_MOBILE.viewDir, distance),
@@ -50,6 +56,37 @@ function getHomeCameraState(camera) {
   return {
     position: HOME_DESKTOP.position.clone(),
     target: HOME_DESKTOP.target.clone(),
+  };
+}
+
+function getTargetCameraState(targetId, camera, cssScreens) {
+  const config = CAMERA_TARGETS[targetId];
+  const aspect = window.innerWidth / window.innerHeight;
+
+  // Desktop landscape: keep exact hand-tuned coordinates untouched
+  if (aspect >= 1) {
+    return {
+      cameraPos: config.cameraPos.clone(),
+      lookAt: config.lookAt.clone(),
+    };
+  }
+
+  // Portrait mobile: aim dead-center at the actual 3D CSS3D screen & compute exact horizontal-fit distance
+  const lookAt = config.lookAt.clone();
+  const cssObj = cssScreens[targetId];
+  if (cssObj) {
+    cssObj.updateWorldMatrix(true, false);
+    cssObj.getWorldPosition(lookAt);
+  }
+
+  const vFovRad = THREE.MathUtils.degToRad(camera.fov);
+  const tanHalfV = Math.tan(vFovRad / 2);
+  const distH = (config.portraitFitWidth / 2) / (tanHalfV * aspect);
+  const distance = distH * config.portraitPadding;
+
+  return {
+    cameraPos: lookAt.clone().addScaledVector(config.portraitViewDir, distance),
+    lookAt,
   };
 }
 
@@ -73,7 +110,7 @@ export function setupInteractions(ctx, hints, cssScreens = {}, radioController =
   const initialHome = getHomeCameraState(camera);
   camera.position.copy(initialHome.position);
   controls.target.copy(initialHome.target);
-  controls.maxDistance = 85;
+  controls.maxDistance = 95;
   controls.update();
 
   function setActiveNav(navName) {
@@ -85,6 +122,13 @@ export function setupInteractions(ctx, hints, cssScreens = {}, radioController =
   function playSound(audio) {
     audio.currentTime = 0;
     audio.play().catch(() => {});
+  }
+
+  function syncChairVisibility() {
+    if (!cssScreens.chair) return;
+    // Hide desk chair only while zoomed into the PC monitor on portrait mobile so it doesn't block the pulled-back view
+    const hideChair = activeTargetId === 'computerScreen' && isPortraitViewport();
+    cssScreens.chair.visible = !hideChair;
   }
 
   function cancelPcBootSequence() {
@@ -191,43 +235,11 @@ export function setupInteractions(ctx, hints, cssScreens = {}, radioController =
     );
   }
 
-  function isMobileOverlayActive() {
-    return Boolean(activeTargetId && !isTransitioning && isMobileViewport());
-  }
-
-  function syncScreenPresentation(targetId, show) {
-    const config = CAMERA_TARGETS[targetId];
-    if (!config) return;
-    const el = document.getElementById(config.interfaceId);
-    const cssObj = cssScreens[targetId];
-    if (!el) return;
-
-    if (show && isMobileViewport()) {
-      if (el.parentNode !== document.body) {
-        document.body.appendChild(el);
-      }
-      el.style.display = '';
-      el.style.position = '';
-      el.style.transform = '';
-      el.classList.add('mobile-overlay', 'active');
-    } else if (show) {
-      el.classList.remove('mobile-overlay');
-      el.style.display = '';
-      if (cssObj) cssObj.visible = true;
-      el.classList.add('active');
-    } else {
-      el.classList.remove('active', 'mobile-overlay');
-      el.style.display = '';
-      el.style.position = '';
-      if (cssObj) cssObj.visible = true;
-    }
-  }
-
   function hideAllInterfaces() {
     cancelPcBootSequence();
     cancelPhoneConnectSequence();
-    syncScreenPresentation('computerScreen', false);
-    syncScreenPresentation('phone', false);
+    document.getElementById('pc-interface')?.classList.remove('active');
+    document.getElementById('phone-interface')?.classList.remove('active');
   }
 
   function openProject(url, title = 'project.html') {
@@ -287,23 +299,26 @@ export function setupInteractions(ctx, hints, cssScreens = {}, radioController =
     renderer.domElement.style.cursor = 'default';
     hints.setHintsTemporarilyHidden(true);
     setActiveNav(config.navId);
+    syncChairVisibility();
     playSound(zoomSound);
+
+    const { cameraPos, lookAt } = getTargetCameraState(targetId, camera, cssScreens);
 
     gsap.killTweensOf(camera.position);
     gsap.killTweensOf(controls.target);
 
     gsap.to(camera.position, {
-      x: config.cameraPos.x,
-      y: config.cameraPos.y,
-      z: config.cameraPos.z,
+      x: cameraPos.x,
+      y: cameraPos.y,
+      z: cameraPos.z,
       duration: 1.8,
       ease: 'power2.inOut',
     });
 
     gsap.to(controls.target, {
-      x: config.lookAt.x,
-      y: config.lookAt.y,
-      z: config.lookAt.z,
+      x: lookAt.x,
+      y: lookAt.y,
+      z: lookAt.z,
       duration: 1.8,
       ease: 'power2.inOut',
       onUpdate: () => {
@@ -312,7 +327,7 @@ export function setupInteractions(ctx, hints, cssScreens = {}, radioController =
       onComplete: () => {
         isTransitioning = false;
         if (activeTargetId === targetId) {
-          syncScreenPresentation(targetId, true);
+          document.getElementById(config.interfaceId)?.classList.add('active');
           if (targetId === 'computerScreen') {
             startPcBootSequence();
           } else if (targetId === 'phone') {
@@ -334,6 +349,7 @@ export function setupInteractions(ctx, hints, cssScreens = {}, radioController =
     activeTargetId = null;
     isTransitioning = true;
     setActiveNav('home');
+    syncChairVisibility();
     playSound(zoomSoundReverse);
 
     const homeState = getHomeCameraState(camera);
@@ -466,8 +482,12 @@ export function setupInteractions(ctx, hints, cssScreens = {}, radioController =
   // Responsive resize & orientation change handling
   window.addEventListener('resize', () => {
     resizeRenderers();
+    syncChairVisibility();
     if (activeTargetId && !isTransitioning) {
-      syncScreenPresentation(activeTargetId, true);
+      const { cameraPos, lookAt } = getTargetCameraState(activeTargetId, camera, cssScreens);
+      camera.position.copy(cameraPos);
+      controls.target.copy(lookAt);
+      camera.lookAt(controls.target);
     }
   });
 
@@ -476,6 +496,5 @@ export function setupInteractions(ctx, hints, cssScreens = {}, radioController =
   return {
     zoomToTarget,
     zoomOut,
-    isMobileOverlayActive,
   };
 }
