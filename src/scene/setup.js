@@ -12,14 +12,17 @@ import { Howler } from 'howler';
 const cameraForward = new THREE.Vector3();
 
 export function createSceneContext() {
+  const initWidth = document.documentElement.clientWidth || window.innerWidth;
+  const initHeight = document.documentElement.clientHeight || window.innerHeight;
+
   const scene = new THREE.Scene();
-  const isPortraitInit = window.innerWidth < window.innerHeight;
+  const isPortraitInit = initWidth < initHeight;
   scene.fog = new THREE.FogExp2(0x000000, isPortraitInit ? 0.009 : 0.02);
   scene.background = new THREE.Color(0x000000);
 
   const camera = new THREE.PerspectiveCamera(
     75,
-    window.innerWidth / window.innerHeight,
+    initWidth / initHeight,
     0.1,
     1000
   );
@@ -30,7 +33,7 @@ export function createSceneContext() {
     antialias: true,
   });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setSize(initWidth, initHeight, false);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.2;
@@ -105,6 +108,7 @@ export function createSceneContext() {
     if (assetEl) assetEl.textContent = 'world.ready — entering room...';
 
     if (!loadingScreen) return;
+    resizeRenderers();
     setTimeout(() => {
       loadingScreen.style.opacity = '0';
       loadingScreen.style.transform = 'scale(1.03)';
@@ -119,20 +123,22 @@ export function createSceneContext() {
   gltfLoader.setMeshoptDecoder(MeshoptDecoder);
 
   function resizeRenderers() {
-    const width = window.innerWidth;
-    const height = window.innerHeight;
+    const width = document.documentElement.clientWidth || window.innerWidth;
+    const height = document.documentElement.clientHeight || window.innerHeight;
     camera.aspect = width / height;
     camera.updateProjectionMatrix();
 
     scene.fog.density = width < height ? 0.009 : 0.02;
 
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setSize(width, height);
+    renderer.setSize(width, height, false);
     composer.setSize(width, height);
     bloomPass.setSize(width, height);
     cssRenderer.setSize(width, height);
     css2DRenderer.setSize(width, height);
   }
+
+  window.visualViewport?.addEventListener('resize', resizeRenderers);
 
   function updateAudioListener() {
     Howler.pos(camera.position.x, camera.position.y, camera.position.z);
